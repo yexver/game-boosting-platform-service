@@ -1,0 +1,35 @@
+server:
+  port: 8081
+spring:
+  application:
+    name: jmz-common-security
+  #redis设置
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      password:
+      database: 1  # 设置存储数据库的索引
+      lettuce:
+        pool:
+          max-active: 8      # 最大连接数（默认8）
+          max-idle: 8        # 最大空闲连接（默认8）
+          min-idle: 0        # 最小空闲连接（默认0）
+          max-wait: -1ms     # 获取连接最大等待时间（默认-1，无限等待）
+      timeout: 2000ms
+
+# jwt 配置
+jwt:
+  secretKey: KbPeShVmYq3t6w9z$C&F)H@McQfTjWnZr4u7x!A%D*G-JaNdRgU
+  expiration: 8640000
+  header: Authorization
+
+#监控
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"  # 暴露所有端点
+  endpoint:
+    health:
+      show-details: always  # 显示详细健康信息

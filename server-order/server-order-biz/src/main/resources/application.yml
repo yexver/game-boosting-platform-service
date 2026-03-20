@@ -1,0 +1,72 @@
+server:
+  port: 6666
+spring:
+  application:
+    name: server-order
+  config:
+    additional-location: classpath:/
+    import:
+      - optional:classpath:config.yml
+      - optional:nacos:common.yml?group=${NACOS_NAMESPACE:dev}
+      - optional:nacos:jmz-security.yml?group=${NACOS_NAMESPACE:dev}
+  cloud:
+    nacos:
+      username: nacos
+      password: nacos
+      server-addr: ${jmz.game-boosting.nacos.server.url}:${jmz.game-boosting.nacos.server.port}
+      config:
+        namespace: ${NACOS_NAMESPACE:dev}
+    openfeign:
+      client:
+        config:
+          default:
+            connect-timeout: 5000
+            read-timeout: 5000
+      compression:
+        request:
+          enabled: true
+        response:
+          enabled: true
+  datasource:
+    url: jdbc:mysql://localhost:3306/game-boosting-platform-jmz-service?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      connection-timeout: 5000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      pool-name: MyHikariPool
+  data:
+    redis:
+      host: ${jmz.game-boosting.redis.url}
+      port: ${jmz.game-boosting.redis.port}
+      password: ${jmz.game-boosting.redis.password:}
+      database: 1
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1ms
+      timeout: 2000ms
+mybatis-plus:
+  mapper-locations: classpath*:/mappers/**/*Mapper.xml
+  type-aliases-package: com.jmz.serveruser.entity,com.jmz.serverorder.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+jwt:
+  secretKey: KbPeShVmYq3t6w9z$C&F)H@McQfTjWnZr4u7x!A%D*G-JaNdRgU
+  expiration: 8640000
+  header: Authorization
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always

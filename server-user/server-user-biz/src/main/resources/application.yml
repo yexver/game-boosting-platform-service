@@ -1,0 +1,53 @@
+server:
+  port: 5555
+spring:
+  application:
+    name: server-user
+  config:
+    additional-location: classpath:/
+    import:
+      - optional:classpath:config.yml
+      - optional:nacos:jmz-server-user.yml?group=${NACOS_NAMESPACE:dev}
+  cloud:
+    nacos:
+      username: nacos
+      password: nacos
+      server-addr: ${jmz.game-boosting.nacos.server.url}:${jmz.game-boosting.nacos.server.port}
+      config:
+        namespace: ${NACOS_NAMESPACE:dev}
+  datasource:
+    url: jdbc:mysql://localhost:3306/game-boosting-platform-jmz-service?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      connection-timeout: 5000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      pool-name: MyHikariPool
+  data:
+    redis:
+      host: ${jmz.game-boosting.redis.url}
+      port: ${jmz.game-boosting.redis.port}
+      password: ${jmz.game-boosting.redis.password:}
+      database: 1
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1ms
+      timeout: 2000ms
+mybatis-plus:
+  mapper-locations: classpath*:/mappers/**/*Mapper.xml
+  type-aliases-package: com.jmz.serveruser.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+alipay:
+  appId: 9021000150664357
+  appPrivateKey: MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCV1A0rCO1ouOKa9Z2uRYgx/fJOnubKsOvUxCTCUKKAXevXMtRuZDEk5xZxRFDQCds3zDZctWvgPOerhaFtHzI3KDN+6A5gV7xyWkvOnstrhTyIMyOvngzmO8ZyVr/RMKMIT09JLynolV/xcmdODHHO7Tt4wKOkS/esgnI3sw7EmTpaz63DtB0Qa2npQ6v8QtBHv9ZQCxfHVLggJUB95Vpi/5qU/RygrLSOXoiE2yysfIyGHrJUo9NRjCLJpXPL1Q2qDuEkeQ9CHBmv9d3p0GG+q4TGlYn3Isk8cXYiBx8KCh8c4QLM1ubLp9Qr4e9zTEd1oeCs3mIqErOmJxAeqNb5AgMBAAECggEAU7p84V/LzIoFmLNJuuoAgm93yZfjQcI9CFnUcQK+zR2vfkNZk5dKH2VElWeoAZqAd14XwxdfgaCHlsLGw0R7u3crz+++mPhuxzjOxFjZNOzwNuzdNHcOnlspOxxfdXfIpAwuMqe4s9FGHJfiQyuRLiJE6eY9jMMnVbBQQ/A8gICEkHnwIWjdVpclGr2kTqsrEtpF1e2C4W4KuJscjBfyqgGMcYLUVD4vGQcrtmgdoSWDV9U4VfmkDqGAB/BFF0WKgvdK5XGFs67QRPD1gZFGgqhLCFnrBlnQNNw+imsV7NWsWyyjIIi7o+ZxFetN5k4OWZhPlMlDIPQwT57Lp/hSQQKBgQDZlVzLLLYrlXTFWOYNdikhe6OliobM7yfRxAgW1PQepc9eGn7C4AkEB6lLJYtlJXT1Jvk9TaYaXuSTKXdLWwnW2HmeFdFY3l1XkMBV90nQmOeFoSUHhO8PMGj/ghxMZe755jywZzTBz40TFBGO/mVrpkUDHVyIPN+4UxEZ8BAyKwKBgQCwSDMFSuDfs6J1PiUJBUPj0qvX26M103jA9YQ+E35iFhI33ydpIwpVqY7YgqBGgxfjcN5wI9TxXm2/39CRvY2UCHvHDOQHGeZSXkcg7P+FQ9vVpj5hyYPB/zJEeWCWTeikQcNQLhQGB2K+by+GeIJIWjh0HdEXB/1KQaUmHR8dawKBgQDLnOOeWjQLqywANcXrGQU6iSpGEtE83BzGRw1O2G+ucnoQ1PiEwwSM2eKKKRM+TwQZGiSpQo3LJbv/HxG82e/mNuPwlPg4kraE6Dek+un/o+cc/QTa+YKBE0tet9JliApPny5x4dLT/7dEAEbCKrycNZdlZ8ec0mKFam6ZeDafywKBgQDLnOOeWjQLqywANcXrGQU6iSpGEtE83BzGRw1O2G+ucnoQ1PiEwwSM2eKKKRM+TwQZGiSpQo3LJbv/HxG82e/mNuPwlPg4kraE6Dek+un/o+cc/QTa+YKBE0tet9JliApPny5x4dLT/7dEAEbCKrycNZdlZ8ec0mKFam6ZeDafywKBgQCcMn0y1VRII01yAWyjf4zWU5d8ntsRGJ5Iq8NPlcpIczIVW5/6IthHawRth+EoWYRTPXF7f+RxMrCgcVrHqGPIpXO3vg5W1HYmye7Ql+8ZUDV8K9/emcYroUoTLlGNHN9km/jKFOodJXIzNyWvSxx1q6uWB817UNL4dw40pV0qnQKBgBc2kRX4Vr1q1FPlIIsrtx8jEtUQZQHX+YNdQuBYIj5G9IbTCA0qmsgsL7FaK5u28d97Xepe3T2OopsZNP3Fw7tKAM5xDvOZVtWqpmUb5u2hbImUFQEkdgQEWZo/8kfyNkoCCbZx+6X0XjNaw9GA/EGnXrnAcH2nyaXvK8e6/h7N
+  alipayPublicKey: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuCpp3Fk9veiD02WeM8LHaWXuUs9z+ylCrXUhE+EUH4zkB6mFkbmyMCSCIs26JpGbnSQPiSapl5V+yB9f95ZAozg/X0UkOyRjPaQb5aDe1B04os7OdTofdl94fOjsG6rhbR2Tdeh856mAjPv8FuLhtqYxMgRNP5dVpdnOB34Ccr6frWz3ETY6yu/sDRbmaflU/sSuM037b3als6iPWwL8CiBfadwEo3a0xluKWcBNOslKQeOI6MsQAZGVBGfg3Qn7lnx62flppbK5LjtN5NnXldZE6LRWhk3WWmv0dhz0+7Q0DpEq+p5HIxU6TsZidE/ds6pOrFvBlBuBvMR8MeL3HQIDAQAB
+  notifyUrl: http://tbbe7658.natappfree.cc/alipay/notify

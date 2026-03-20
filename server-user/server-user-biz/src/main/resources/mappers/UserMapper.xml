@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jmz.serveruser.mapper.UserMapper">
+    <!-- 根据用户ID查询用户信息、角色信息和权限信息 -->
+    <select id="getLoginUserInfo" resultType="com.jmz.serveruser.vo.LoginUserInfoVo">
+        SELECT
+            u.user_id AS userId,
+            u.username,
+            u.password,
+            u.phone,
+            u.email,
+            u.avatar,
+            u.nickname,
+            u.gender,
+            u.status,
+            u.identity_verified AS identityVerified,
+            CAST(GROUP_CONCAT(DISTINCT r.keyword) AS CHAR) AS role,
+            CAST(GROUP_CONCAT(DISTINCT p.keyword) AS CHAR) AS permission
+        FROM tb_jmz_user u
+                 LEFT JOIN tb_jmz_user_role ur ON u.user_id = ur.user_id
+                 LEFT JOIN tb_jmz_role r ON ur.role_id = r.id
+                 LEFT JOIN tb_jmz_role_permission rp ON r.id = rp.role_id
+                 LEFT JOIN tb_jmz_permission p ON rp.permission_id = p.id
+        WHERE u.user_id = #{userId}
+        GROUP BY u.user_id, u.username, u.password, u.phone, u.email, u.avatar, u.nickname, u.gender, u.status, u.identity_verified
+    </select>
+
+    <!-- 根据用户ID查询用户信息、角色信息和权限信息 -->
+    <select id="getUserInfo" resultType="com.jmz.serveruser.vo.UserInfoVo">
+        SELECT
+            u.user_id AS userId,
+            u.username,
+            u.phone,
+            u.email,
+            u.avatar,
+            u.nickname,
+            u.gender,
+            u.status,
+            u.is_boosting_enabled AS isBoostingEnabled,
+            u.identity_verified AS identityVerified,
+            CAST(GROUP_CONCAT(DISTINCT r.keyword) AS CHAR) AS role,
+            CAST(GROUP_CONCAT(DISTINCT p.keyword) AS CHAR) AS permission
+        FROM tb_jmz_user u
+                 LEFT JOIN tb_jmz_user_role ur ON u.user_id = ur.user_id
+                 LEFT JOIN tb_jmz_role r ON ur.role_id = r.id
+                 LEFT JOIN tb_jmz_role_permission rp ON r.id = rp.role_id
+                 LEFT JOIN tb_jmz_permission p ON rp.permission_id = p.id
+        WHERE u.user_id = #{userId}
+        GROUP BY u.user_id, u.username, u.password, u.phone, u.email, u.avatar, u.nickname, u.gender, u.status, u.is_boosting_enabled, u.identity_verified
+    </select>
+    <!-- 查询用户角色 keyword 列表 -->
+    <select id="getUserRoleKeywordsByUserId" resultType="string">
+        SELECT DISTINCT r.keyword
+        FROM tb_jmz_user_role ur
+        LEFT JOIN tb_jmz_role r ON ur.role_id = r.id
+        WHERE ur.user_id = #{userId}
+    </select>
+    <!-- 查询用户角色 id 列表 -->
+    <select id="getUserRoleIdsByUserId" resultType="int">
+        SELECT DISTINCT r.id
+        FROM tb_jmz_user_role ur
+                 LEFT JOIN tb_jmz_role r ON ur.role_id = r.id
+        WHERE ur.user_id = #{userId}
+    </select>
+
+
+    <!-- 查询用户权限 keyword 列表 -->
+    <select id="getUserPermissionKeywordsByUserId" resultType="string">
+        SELECT DISTINCT p.keyword
+        FROM tb_jmz_user_role ur
+        LEFT JOIN tb_jmz_role r ON ur.role_id = r.id
+        LEFT JOIN tb_jmz_role_permission rp ON r.id = rp.role_id
+        LEFT JOIN tb_jmz_permission p ON rp.permission_id = p.id
+        WHERE ur.user_id = #{userId}
+    </select>
+    <!-- 查询用户权限 id 列表 -->
+    <select id="getUserPermissionIdsByUserId" resultType="int">
+        SELECT DISTINCT p.id
+        FROM tb_jmz_user_role ur
+                 LEFT JOIN tb_jmz_role r ON ur.role_id = r.id
+                 LEFT JOIN tb_jmz_role_permission rp ON r.id = rp.role_id
+                 LEFT JOIN tb_jmz_permission p ON rp.permission_id = p.id
+        WHERE ur.user_id = #{userId}
+    </select>
+
+    <!-- 批量插入用户角色 -->
+    <insert id="insertBatchSomeColumn">
+        INSERT INTO tb_jmz_user_role (user_id, role_id)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.userId}, #{item.roleId})
+        </foreach>
+    </insert>
+
+    <!-- 查询最近N天每天的新增用户数 -->
+    <select id="getUserAddTrend" resultType="com.jmz.serveruser.vo.UserAddTrendVO">
+        SELECT
+            DATE_FORMAT(create_time, '%Y-%m-%d') AS date,
+            COUNT(*) AS count
+        FROM tb_jmz_user
+        WHERE create_time >= DATE_SUB(CURDATE(), INTERVAL #{days} DAY)
+        GROUP BY DATE_FORMAT(create_time, '%Y-%m-%d')
+        ORDER BY date ASC
+    </select>
+
+    <!-- 查询用户总数和今日新增用户数 -->
+    <select id="getUserStats" resultType="com.jmz.serveruser.vo.UserStatsVO">
+        SELECT
+            (SELECT COUNT(*) FROM tb_jmz_user) AS total,
+            (SELECT COUNT(*) FROM tb_jmz_user WHERE TO_DAYS(create_time) = TO_DAYS(NOW())) AS todayNew
+    </select>
+
+    <!-- 分页查询代练用户列表 -->
+    <select id="selectBoostingUsers" resultType="com.jmz.serveruser.vo.BoostingUserVO">
+        SELECT
+            u.user_id AS userId,
+            u.username,
+            u.avatar,
+            (
+                SELECT COUNT(*) FROM tb_jmz_orders o
+                WHERE o.taker_id = u.user_id
+                  AND o.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+            ) AS orderCount30d,
+            (
+                SELECT COUNT(*) FROM tb_jmz_orders o
+                WHERE o.taker_id = u.user_id
+                  AND o.status = 5
+                  AND o.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+            ) AS finishCount30d,
+            (
+                SELECT IFNULL(ROUND(SUM(CASE WHEN o.manager_id IS NOT NULL THEN 1 ELSE 0 END) / COUNT(*), 2), 0)
+                FROM tb_jmz_orders o
+                WHERE o.taker_id = u.user_id
+                  AND o.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+            ) AS managerRate30d
+        FROM tb_jmz_user u
+        INNER JOIN tb_jmz_user_game_boosting ug ON u.user_id = ug.user_id
+        <where>
+            u.is_boosting_enabled = 1
+            <if test="gameId != null">
+                AND ug.game_id = #{gameId}
+            </if>
+            <if test="username != null and username != ''">
+                AND u.username LIKE CONCAT('%', #{username}, '%')
+            </if>
+        </where>
+        GROUP BY u.user_id, u.username, u.avatar
+        ORDER BY orderCount30d DESC
+        LIMIT #{offset}, #{pageSize}
+    </select>
+    <select id="countBoostingUsers" resultType="int">
+        SELECT COUNT(DISTINCT u.user_id)
+        FROM tb_jmz_user u
+        INNER JOIN tb_jmz_user_game_boosting ug ON u.user_id = ug.user_id
+        <where>
+            u.is_boosting_enabled = 1
+            <if test="gameId != null">
+                AND ug.game_id = #{gameId}
+            </if>
+            <if test="username != null and username != ''">
+                AND u.username LIKE CONCAT('%', #{username}, '%')
+            </if>
+        </where>
+    </select>
+
+</mapper>
+

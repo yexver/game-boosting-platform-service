@@ -1,0 +1,98 @@
+spring:
+  cloud:
+    gateway:
+      locator:
+        enabled: true
+      routes:
+        # 认证中心
+        - id: pig-auth
+          uri: lb://pig-auth
+          predicates:
+            - Path=/auth/**
+          filters:
+            # 验证码处理
+            - ValidateCodeGatewayFilter
+            # 前端密码解密
+            - PasswordDecoderFilter
+        #UPMS 模块
+        - id: pig-upms-biz
+          uri: lb://pig-upms-biz
+          predicates:
+            - Path=/admin/**
+          filters:
+            # 限流配置
+            - name: RequestRateLimiter
+              args:
+                key-resolver: '#{@remoteAddrKeyResolver}'
+                redis-rate-limiter.replenishRate: 100
+                redis-rate-limiter.burstCapacity: 200
+        # 代码生成模块
+        - id: pig-codegen
+          uri: lb://pig-codegen
+          predicates:
+            - Path=/gen/**
+        # 固定路由转发配置 无修改
+        - id: openapi
+          uri: lb://pig-gateway
+          predicates:
+            - Path=/v3/api-docs/**
+          filters:
+            - RewritePath=/v3/api-docs/(?<path>.*), /$\{path}/$\{path}/v3/api-docs
+        # 文件管理模块
+        - id: file-biz
+          uri: lb://file-biz
+          predicates:
+            - Path=/file/**
+        # 日志管理模块
+        - id: log-biz
+          uri: lb://log-biz
+          predicates:
+            - Path=/log/**
+        # 素材管理模块
+        - id: material-biz
+          uri: lb://material-biz
+          predicates:
+            - Path=/material/**
+        # 流程管理模块
+        - id: camunda-biz
+          uri: lb://camunda-biz
+          predicates:
+            - Path=/camunda/**
+        # 活动模块
+        - id: activity-biz
+          uri: lb://activity-biz
+          predicates:
+            - Path=/activity/**
+        # 票据模块
+        - id: ticket-biz
+          uri: lb://ticket-biz
+          predicates:
+            - Path=/ticket/**
+        # 审计模块
+        - id: audit-biz
+          uri: lb://audit-biz
+          predicates:
+            - Path=/audit/**
+
+            # 学院模块
+        - id: college-biz
+          uri: lb://college-biz
+          predicates:
+            - Path=/college/**
+            # education模块
+        - id: pig-education
+          uri: lb://education-biz
+          predicates:
+            - Path=/education/**
+            # 航海学院模块
+        - id: academy-biz
+          uri: lb://academy-biz
+          predicates:
+            - Path=/academy/**
+
+gateway:
+  encode-key: 'thanks,pig4cloud'
+  ignore-clients:
+    - test
+    - client
+    - wx

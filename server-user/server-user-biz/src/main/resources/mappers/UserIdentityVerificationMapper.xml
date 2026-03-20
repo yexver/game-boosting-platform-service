@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jmz.serveruser.mapper.UserIdentityVerificationMapper">
+
+    <select id="selectIdentityList" resultType="com.jmz.serveruser.vo.IdentityVerificationVO">
+        SELECT 
+            i.id,
+            i.user_id AS userId,
+            u.username,
+            i.real_name AS realName,
+            i.id_card_number AS idCardNumber,
+            i.id_card_front_url AS idCardFrontUrl,
+            i.id_card_back_url AS idCardBackUrl,
+            i.face_photo_url AS facePhotoUrl,
+            i.verification_status AS verificationStatus,
+            i.reject_reason AS rejectReason,
+            v.username AS verifierName,
+            i.verified_at AS verifiedAt,
+            i.created_at AS createdAt
+        FROM tb_jmz_user_identity_verification i
+        LEFT JOIN tb_jmz_user u ON i.user_id = u.user_id
+        LEFT JOIN tb_jmz_user v ON i.verifier_id = v.user_id
+        <where>
+            <if test="status != null">
+                AND i.verification_status = #{status}
+            </if>
+        </where>
+        ORDER BY i.created_at DESC
+        LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <select id="selectIdentityCount" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM tb_jmz_user_identity_verification i
+        <where>
+            <if test="status != null">
+                AND i.verification_status = #{status}
+            </if>
+        </where>
+    </select>
+
+</mapper>

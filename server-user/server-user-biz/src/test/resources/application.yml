@@ -1,0 +1,59 @@
+server:
+  port: 5555
+spring:
+  application:
+      name: server-user
+  profiles:
+    active: dev
+  cloud:
+    nacos:
+      username: nacos
+      password: nacos
+      server-addr: ${NACOS_HOST:jmz-auth}:${NACOS_PORT:8848}
+      config:
+        namespace: ${NACOS_NAMESPACE:${spring.profiles.active}}
+  datasource:
+    url: jdbc:mysql://localhost:3306/game-boosting-platform-jmz-service?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      minimum-idle: 5           # 最小空闲连接数（默认等于 max-pool-size）
+      maximum-pool-size: 20     # 最大连接数（默认 10）
+      connection-timeout: 5000  # 连接超时时间（毫秒）
+      idle-timeout: 600000      # 空闲连接超时时间（默认 600000ms）
+      max-lifetime: 1800000     # 连接最大生命周期（默认 1800000ms）
+      pool-name: MyHikariPool   # 连接池名称
+  #redis设置
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      password:
+      database: 1  # 设置存储数据库的索引
+      lettuce:
+        pool:
+          max-active: 8      # 最大连接数（默认8）
+          max-idle: 8        # 最大空闲连接（默认8）
+          min-idle: 0        # 最小空闲连接（默认0）
+          max-wait: -1ms     # 获取连接最大等待时间（默认-1，无限等待）
+      timeout: 2000ms
+
+
+mybatis-plus:
+  # 指定mapper.xml文件位置（支持通配符）
+  mapper-locations: classpath*:/mappers/**/*Mapper.xml
+  # 实体类所在包
+  type-aliases-package: com.jmz.serveruser.entity
+  # 其他配置
+  configuration:
+    map-underscore-to-camel-case: true  # 自动驼峰命名转换
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+---
+spring:
+  config:
+    import:
+      - optional:nacos:jmz-server-user.yml?group=dev
+    activate:
+      on-profile: dev
+

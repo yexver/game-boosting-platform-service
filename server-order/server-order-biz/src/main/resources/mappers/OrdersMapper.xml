@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jmz.serverorder.mapper.OrdersMapper">
+
+    <select id="selectOrderInfoList" resultType="com.jmz.serverorder.vo.OrdersListVO">
+        SELECT
+            o.id,
+            o.order_no,
+            o.publisher_id,
+            o.taker_id,
+            o.title,
+            o.game_id,
+            o.system_id,
+            o.server_id,
+            o.manager_id,
+            o.boosting_type,
+            o.price,
+            o.security_deposit,
+            o.efficiency_deposit,
+            o.status,
+            o.created_at,
+            o.updated_at,
+            u.username AS publisherUsername,
+            u.avatar AS publisherAvatar,
+            t.username AS takerUsername,
+            t.avatar AS takerAvatar,
+            g.name AS gameName,
+            s.name AS systemName,
+            sv.name AS serverName
+        FROM tb_jmz_orders o
+        LEFT JOIN tb_jmz_user u ON o.publisher_id = u.user_id
+        LEFT JOIN tb_jmz_user t ON o.taker_id = t.user_id
+        LEFT JOIN tb_jmz_games g ON o.game_id = g.id
+        LEFT JOIN tb_jmz_systems s ON o.system_id = s.id
+        LEFT JOIN tb_jmz_game_servers sv ON o.server_id = sv.id
+        <where>
+            <if test="query.title != null and query.title != ''">
+                (
+                    o.title LIKE CONCAT('%', #{query.title}, '%')
+                    OR o.order_no LIKE CONCAT('%', #{query.title}, '%')
+                    OR u.username LIKE CONCAT('%', #{query.title}, '%')
+                    OR t.username LIKE CONCAT('%', #{query.title}, '%')
+                )
+            </if>
+            <if test="query.gameId != null">
+                AND o.game_id = #{query.gameId}
+            </if>
+            <if test="query.systemId != null">
+                AND o.system_id = #{query.systemId}
+            </if>
+            <if test="query.serverId != null">
+                AND o.server_id = #{query.serverId}
+            </if>
+            <if test="query.managerId">
+                AND o.manager_id = #{query.managerId}
+            </if>
+            <if test="query.status != null">
+                AND o.status = #{query.status}
+            </if>
+            <if test="query.type != null">
+                AND o.boosting_type = #{query.type}
+            </if>
+            <if test="query.priceMin != null">
+                AND o.price &gt;= #{query.priceMin}
+            </if>
+            <if test="query.priceMax != null">
+                AND o.price &lt;= #{query.priceMax}
+            </if>
+            <if test="query.publisherId != null">
+                AND o.publisher_id = #{query.publisherId}
+            </if>
+            <if test="query.takerId != null">
+                AND o.taker_id = #{query.takerId}
+            </if>
+        </where>
+        <choose>
+            <when test="query.sort == 1">
+                ORDER BY o.price DESC
+            </when>
+            <when test="query.sort == 2">
+                ORDER BY o.price ASC
+            </when>
+            <when test="query.sort == 3">
+                ORDER BY o.security_deposit ASC
+            </when>
+            <when test="query.sort == 4">
+                ORDER BY o.security_deposit DESC
+            </when>
+            <when test="query.sort == 5">
+                ORDER BY o.efficiency_deposit ASC
+            </when>
+            <when test="query.sort == 6">
+                ORDER BY o.efficiency_deposit DESC
+            </when>
+            <otherwise>
+                ORDER BY o.created_at DESC
+            </otherwise>
+        </choose>
+        LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <select id="countOrderInfoList" resultType="int">
+        SELECT COUNT(*)
+        FROM tb_jmz_orders o
+        LEFT JOIN tb_jmz_user u ON o.publisher_id = u.user_id
+        <where>
+            <if test="query.title != null and query.title != ''">
+                (
+                    o.title LIKE CONCAT('%', #{query.title}, '%')
+                    OR o.order_no LIKE CONCAT('%', #{query.title}, '%')
+                    OR u.username LIKE CONCAT('%', #{query.title}, '%')
+                )
+            </if>
+            <if test="query.gameId != null">
+                AND o.game_id = #{query.gameId}
+            </if>
+            <if test="query.systemId != null">
+                AND o.system_id = #{query.systemId}
+            </if>
+            <if test="query.serverId != null">
+                AND o.server_id = #{query.serverId}
+            </if>
+            <if test="query.managerId">
+                AND o.manager_id = #{query.managerId}
+            </if>
+            <if test="query.status != null">
+                AND o.status = #{query.status}
+            </if>
+            <if test="query.type != null">
+                AND o.boosting_type = #{query.type}
+            </if>
+            <if test="query.priceMin != null">
+                AND o.price &gt;= #{query.priceMin}
+            </if>
+            <if test="query.priceMax != null">
+                AND o.price &lt;= #{query.priceMax}
+            </if>
+            <if test="query.publisherId != null">
+                AND o.publisher_id = #{query.publisherId}
+            </if>
+            <if test="query.takerId != null">
+                AND o.taker_id = #{query.takerId}
+            </if>
+        </where>
+    </select>
+
+    <select id="countOrdersByPublisherIn30Days" resultType="int">
+        SELECT COUNT(*) FROM tb_jmz_orders
+        WHERE publisher_id = #{publisherId}
+          AND created_at &gt;= DATE_SUB(NOW(), INTERVAL 30 DAY)
+    </select>
+    <select id="countManagerOrdersByPublisherIn30Days" resultType="int">
+        SELECT COUNT(*) FROM tb_jmz_orders
+        WHERE publisher_id = #{publisherId}
+          AND created_at &gt;= DATE_SUB(NOW(), INTERVAL 30 DAY)
+          AND manager_id IS NOT NULL
+    </select>
+
+    <!-- 查询接单详情 -->
+    <select id="selectTakeOrderDetail" resultType="com.jmz.serverorder.vo.TakeOrderDetailVO">
+        SELECT
+            o.id,
+            o.order_no,
+            o.title,
+            o.status,
+            o.created_at,
+            o.game_id,
+            o.system_id,
+            o.server_id,
+            o.boosting_type,
+            o.description,
+            o.account_info,
+            o.time_limit,
+            o.price,
+            o.security_deposit,
+            o.efficiency_deposit,
+            o.publisher_id,
+            u.username AS publisherUsername,
+            u.avatar AS publisherAvatar,
+            g.name AS gameName,
+            g.icon AS gameIcon,
+            s.name AS systemName,
+            s.icon AS systemIcon,
+            sv.name AS serverName,
+            o.start_at,
+            o.actual_at,
+            <!-- 近30天发单量 -->
+            (SELECT COUNT(*) FROM tb_jmz_orders 
+             WHERE publisher_id = o.publisher_id 
+             AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)) AS publisherOrderCount30d,
+            <!-- 近30天客服介入率 -->
+            (SELECT COALESCE(
+                ROUND(
+                    COUNT(CASE WHEN status IN (8, 9, 10) THEN 1 END) * 1.0 / 
+                    COUNT(*), 2
+                ), 0.00
+             ) FROM tb_jmz_orders 
+             WHERE publisher_id = o.publisher_id 
+             AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+             AND status IN (5, 6, 8, 9, 10, 11)) AS publisherManagerRate30d
+        FROM tb_jmz_orders o
+        LEFT JOIN tb_jmz_user u ON o.publisher_id = u.user_id
+        LEFT JOIN tb_jmz_games g ON o.game_id = g.id
+        LEFT JOIN tb_jmz_systems s ON o.system_id = s.id
+        LEFT JOIN tb_jmz_game_servers sv ON o.server_id = sv.id
+        WHERE o.id = #{orderId}
+    </select>
+
+    <!-- 游戏订单分布：统计每个游戏的订单数量（最近N天） -->
+    <select id="getGameOrderDistribution" resultType="com.jmz.serverorder.vo.GameOrderDistributionVO">
+        SELECT
+            o.game_id AS gameId,
+            g.name AS gameName,
+            COUNT(*) AS orderCount
+        FROM tb_jmz_orders o
+        LEFT JOIN tb_jmz_games g ON o.game_id = g.id
+        <where>
+            <if test="days != null">
+                AND o.created_at &gt;= DATE_SUB(CURDATE(), INTERVAL #{days} DAY)
+            </if>
+        </where>
+        GROUP BY o.game_id, g.name
+        ORDER BY orderCount DESC
+    </select>
+
+    <!-- 平台收入趋势：按天统计平台fee收入（最近N天） -->
+    <select id="getIncomeTrend" resultType="com.jmz.serverorder.vo.IncomeTrendVO">
+        SELECT
+            DATE_FORMAT(o.created_at, '%Y-%m-%d') AS date,
+            SUM(o.platform_fee) AS income
+        FROM tb_jmz_orders o
+        <where>
+            <if test="days != null">
+                AND o.created_at &gt;= DATE_SUB(CURDATE(), INTERVAL #{days} DAY)
+            </if>
+            AND o.status = 5
+        </where>
+        GROUP BY DATE_FORMAT(o.created_at, '%Y-%m-%d')
+        ORDER BY date ASC
+    </select>
+
+    <!-- 订单状态占比：统计各状态订单数量（最近N天） -->
+    <select id="getOrderStatusPie" resultType="com.jmz.serverorder.vo.OrderStatusPieVO">
+        SELECT
+            o.status AS status,
+            COUNT(*) AS count
+        FROM tb_jmz_orders o
+        <where>
+            <if test="days != null">
+                AND o.created_at &gt;= DATE_SUB(CURDATE(), INTERVAL #{days} DAY)
+            </if>
+        </where>
+        GROUP BY o.status
+    </select>
+
+</mapper>

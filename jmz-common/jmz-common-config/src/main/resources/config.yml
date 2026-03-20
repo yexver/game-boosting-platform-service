@@ -1,0 +1,11 @@
+# 这是项目的需要改动的所有配置的地址的汇总，需要改哪个中间件的地址，
+jmz:
+  game-boosting:
+    nacos:
+      server:
+        url: 8.134.88.139
+        port: 8848
+    redis:
+      url: 8.134.88.139
+      port: 6379
+      password:

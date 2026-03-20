@@ -1,0 +1,58 @@
+spring:
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowed-origin-patterns: '*'
+            allowed-headers: '*'
+            allowed-methods: '*'
+      routes:
+        - id: jmz-security
+          uri: lb://jmz-security
+          predicates:
+            #- path=/security/** #短写法
+            - name: Path
+              args:
+                pattern: /jmz-security/**
+                match-trailing-slash: true #可匹配末尾的斜杠
+          #order:
+          filters:
+            - RewritePath=/jmz-security/?(?<segment>.*), /$\{segment}
+#      default-filters:
+#        - AddResponseHeader=X-Response-Default-Foo, Default-Bar
+        - id: jmz-file
+          uri: lb://jmz-file
+          predicates:
+            #- path=/security/** #短写法
+            - name: Path
+              args:
+                pattern: /jmz-file/**
+                match-trailing-slash: true #可匹配末尾的斜杠
+          #order:
+          filters:
+            - RewritePath=/jmz-file/?(?<segment>.*), /$\{segment}
+        - id: server-user
+          uri: lb://server-user
+          predicates:
+            #- path=/security/** #短写法
+            - name: Path
+              args:
+                pattern: /server-user/**
+                match-trailing-slash: true #可匹配末尾的斜杠
+          #order:
+          filters:
+            - RewritePath=/server-user/?(?<segment>.*), /$\{segment}
+
+        - id: server-order
+          uri: lb://server-order
+          predicates:
+            #- path=/security/** #短写法
+            - name: Path
+              args:
+                pattern: /server-order/**
+                match-trailing-slash: true #可匹配末尾的斜杠
+          #order:
+          filters:
+            - RewritePath=/server-order/?(?<segment>.*), /$\{segment}
+

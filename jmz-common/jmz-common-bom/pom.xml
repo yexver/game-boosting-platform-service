@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.jmz</groupId>
+    <artifactId>jmz-common-bom</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>jmz-common-bom</name>
+    <description>jmz-common-bom</description>
+    <packaging>pom</packaging>
+
+    <properties>
+        <java.version>17</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <jmz.common.version>0.0.1-SNAPSHOT</jmz.common.version>
+    </properties>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.jmz</groupId>
+                <artifactId>jmz-common-core</artifactId>
+                <version>${jmz.common.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.jmz</groupId>
+                <artifactId>jmz-common-security</artifactId>
+                <version>${jmz.common.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.jmz</groupId>
+                <artifactId>jmz-common-security-domain</artifactId>
+                <version>${jmz.common.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.jmz</groupId>
+                <artifactId>jmz-common-redis</artifactId>
+                <version>${jmz.common.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.jmz</groupId>
+                <artifactId>jmz-common-mybatisPlus</artifactId>
+                <version>${jmz.common.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.jmz</groupId>
+                <artifactId>jmz-common-config</artifactId>
+                <version>${jmz.common.version}</version>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+
+
+
+</project>
