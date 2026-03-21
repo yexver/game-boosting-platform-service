@@ -7,7 +7,7 @@ import com.jmz.serverorder.entity.Orders;
 import com.jmz.serverorder.mapper.OrdersMapper;
 import com.jmz.serverorder.service.OrdersService;
 import com.jmz.serverorder.vo.OrderSimpleDetailVO;
-import com.jmz.serveruser.dto.AccountAdjustDTO;
+import com.jmz.serveraccount.dto.AccountAdjustDTO;
 import com.jmz.serveruser.feign.UserFeignClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.seata.spring.annotation.GlobalTransactional;
@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 import com.jmz.serveruser.vo.UserInfoVo;
 
 import java.util.*;
-import com.jmz.serveruser.feign.UserAccountFeignClient;
+import com.jmz.serveraccount.feign.UserAccountFeignClient;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.jmz.serveruser.entity.User;
 import com.jmz.serverorder.mapper.UserMapper;
@@ -226,7 +226,7 @@ public class OrdersServiceImpl implements OrdersService {
         Orders order = ordersMapper.selectById(orderId);
         if (order == null) return;
         Long publisherId = order.getPublisherId();
-        com.jmz.serveruser.dto.AccountAdjustDTO adjustDTO = new com.jmz.serveruser.dto.AccountAdjustDTO();
+        AccountAdjustDTO adjustDTO = new AccountAdjustDTO();
         adjustDTO.setUserId(publisherId);
         adjustDTO.setAmount(order.getPrice());
         adjustDTO.setType(8); // 解冻/扣除冻结金额

@@ -42,6 +42,12 @@
             <artifactId>jmz-file-api</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
+        <!-- 账户服务API -->
+        <dependency>
+            <groupId>com.jmz</groupId>
+            <artifactId>server-account-api</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
         <!-- seata -->
         <dependency>
             <groupId>com.alibaba.cloud</groupId>

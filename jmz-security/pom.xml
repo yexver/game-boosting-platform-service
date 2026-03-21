@@ -37,6 +37,12 @@
             <artifactId>server-user-api</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
+        <!-- server-account-api -->
+        <dependency>
+            <groupId>com.jmz</groupId>
+            <artifactId>server-account-api</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
         <!-- common-redis -->
         <dependency>
             <groupId>com.jmz</groupId>

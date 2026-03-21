@@ -1,0 +1,65 @@
+server:
+  port: 5556
+spring:
+  application:
+    name: server-account
+  config:
+    additional-location: classpath:/
+    import:
+      - optional:classpath:config.yml
+      - optional:nacos:jmz-server-account.yml?group=${NACOS_NAMESPACE:dev}
+  cloud:
+    nacos:
+      username: nacos
+      password: nacos
+      server-addr: ${jmz.game-boosting.nacos.server.url}:${jmz.game-boosting.nacos.server.port}
+      config:
+        namespace: ${NACOS_NAMESPACE:dev}
+    openfeign:
+      client:
+        config:
+          default:
+            connect-timeout: 10000
+            read-timeout: 30000
+      hystrix:
+        enabled: true
+      compression:
+        request:
+          enabled: true
+        response:
+          enabled: true
+  datasource:
+    url: jdbc:mysql://localhost:3306/game-boosting-platform-jmz-service?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      connection-timeout: 5000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      pool-name: AccountHikariPool
+  data:
+    redis:
+      host: ${jmz.game-boosting.redis.url}
+      port: ${jmz.game-boosting.redis.port}
+      password: ${jmz.game-boosting.redis.password:}
+      database: 1
+      lettuce:
+        pool:
+          max-active: 20
+          max-idle: 10
+          min-idle: 5
+          max-wait: 5000ms
+        shutdown-timeout: 5000ms
+      timeout: 10000ms
+      retry:
+        max-attempts: 5
+        delay: 1000ms
+mybatis-plus:
+  mapper-locations: classpath*:/mappers/**/*Mapper.xml
+  type-aliases-package: com.jmz.serveraccount.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

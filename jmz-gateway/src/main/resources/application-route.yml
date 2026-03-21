@@ -56,3 +56,12 @@ spring:
           filters:
             - RewritePath=/server-order/?(?<segment>.*), /$\{segment}
 
+        - id: server-account
+          uri: lb://server-account
+          predicates:
+            - name: Path
+              args:
+                pattern: /server-account/**
+                match-trailing-slash: true
+          filters:
+            - RewritePath=/server-account/?(?<segment>.*), /$\{segment}

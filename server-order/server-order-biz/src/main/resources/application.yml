@@ -20,8 +20,10 @@ spring:
       client:
         config:
           default:
-            connect-timeout: 5000
-            read-timeout: 5000
+            connect-timeout: 10000
+            read-timeout: 30000
+      hystrix:
+        enabled: true
       compression:
         request:
           enabled: true
@@ -47,11 +49,15 @@ spring:
       database: 1
       lettuce:
         pool:
-          max-active: 8
-          max-idle: 8
-          min-idle: 0
-          max-wait: -1ms
-      timeout: 2000ms
+          max-active: 20
+          max-idle: 10
+          min-idle: 5
+          max-wait: 5000ms
+        shutdown-timeout: 5000ms
+      timeout: 10000ms
+      retry:
+        max-attempts: 5
+        delay: 1000ms
 mybatis-plus:
   mapper-locations: classpath*:/mappers/**/*Mapper.xml
   type-aliases-package: com.jmz.serveruser.entity,com.jmz.serverorder.entity

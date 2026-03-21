@@ -18,6 +18,19 @@ spring:
       server-addr: ${jmz.game-boosting.nacos.server.url}:${jmz.game-boosting.nacos.server.port}
       config:
         namespace: ${NACOS_NAMESPACE:dev}
+    openfeign:
+      client:
+        config:
+          default:
+            connect-timeout: 10000
+            read-timeout: 30000
+      hystrix:
+        enabled: true
+      compression:
+        request:
+          enabled: true
+        response:
+          enabled: true
 
 logging:
   level:

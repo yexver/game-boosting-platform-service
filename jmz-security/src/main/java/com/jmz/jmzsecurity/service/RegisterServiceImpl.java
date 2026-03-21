@@ -8,7 +8,7 @@ import com.jmz.jmzsecurity.domain.dto.RegisterDTO;
 import com.jmz.jmzsecurity.mapper.UserMapper;
 import com.jmz.jmzsecurity.mapper.UserAccountMapper;
 import com.jmz.serveruser.entity.User;
-import com.jmz.serveruser.entity.UserAccount;
+import com.jmz.serveraccount.entity.UserAccount;
 import com.jmz.serveruser.feign.UserFeignClient;
 import com.jmz.jmzcommonredis.utils.RedisUtils;
 import com.jmz.jmzsecurity.exception.base.BaseException;

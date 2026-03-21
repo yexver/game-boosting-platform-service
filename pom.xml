@@ -18,6 +18,7 @@
         <module>server-user</module>
         <module>jmz-file</module>
         <module>server-ai</module>
+        <module>server-account</module>
     </modules>
     <properties>
         <maven.compiler.source>17</maven.compiler.source>

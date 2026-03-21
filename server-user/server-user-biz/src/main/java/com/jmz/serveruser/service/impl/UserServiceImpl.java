@@ -14,7 +14,7 @@ import com.jmz.serveruser.entity.UserRole;
 import com.jmz.serveruser.mapper.UserMapper;
 import com.jmz.serveruser.mapper.UserRoleMapper;
 import com.jmz.serveruser.service.UserService;
-import com.jmz.serveruser.service.UserAccountService;
+import com.jmz.serveraccount.feign.UserAccountFeignClient;
 import com.jmz.jmzcommoncore.responseResult.R;
 import com.jmz.serveruser.vo.LoginUserInfoVo;
 import com.jmz.serveruser.vo.UserInfoVo;
@@ -32,8 +32,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import com.jmz.serveruser.entity.UserAccount;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.HashMap;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -53,7 +53,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Autowired
     private UserMapper userMapper;
     @Autowired
-    private UserAccountService userAccountService;
+    private UserAccountFeignClient userAccountFeignClient;
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
 
@@ -101,7 +101,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         user.setPassword(passwordEncoder.encode(createUserDTO.getPassword()));
         this.save(user);
         // 创建用户账户
-        userAccountService.createAccountForUser(user.getUserId());
+        userAccountFeignClient.createAccountForUser(user.getUserId());
         // 处理角色
         if (createUserDTO.getRoles() != null && !createUserDTO.getRoles().isEmpty()) {
             List<UserRole> userRoles = createUserDTO.getRoles().stream()
@@ -155,7 +155,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         userRoleMapper.delete(new LambdaQueryWrapper<UserRole>().in(UserRole::getUserId, userIds));
         // 删除账户
-        userAccountService.remove(new LambdaQueryWrapper<UserAccount>().in(UserAccount::getUserId, userIds));
+        userIds.forEach(id -> {
+            try {
+                userAccountFeignClient.deleteAccountByUserId(id);
+            } catch (Exception ignored) {}
+        });
         this.remove(new LambdaQueryWrapper<User>().in(User::getUserId, userIds));
         return R.success("用户删除成功");
     }
@@ -302,7 +306,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 
                 // 为每个用户创建账户
                 for (User user : userList) {
-                    userAccountService.createAccountForUser(user.getUserId());
+                    userAccountFeignClient.createAccountForUser(user.getUserId());
                 }
                 
                 // 批量保存用户角色关系

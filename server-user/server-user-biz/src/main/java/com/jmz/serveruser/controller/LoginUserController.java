@@ -4,11 +4,11 @@ import com.jmz.jmzcommoncore.responseResult.R;
 import com.jmz.jmzcommonsecuritydomain.domain.LoginUser;
 import com.jmz.serveruser.service.LoginUserService;
 import com.jmz.serveruser.service.UserService;
-import com.jmz.serveruser.service.UserAccountService;
+import com.jmz.serveraccount.feign.UserAccountFeignClient;
 import com.jmz.serveruser.service.UserGameBoostingService;
-import com.jmz.serveruser.vo.UserInfoVo;
-import com.jmz.serveruser.vo.AccountVO;
+import com.jmz.serveraccount.vo.AccountVO;
 import com.jmz.serveruser.dto.UpdateUserDTO;
+import com.jmz.serveruser.vo.UserInfoVo;
 import com.jmz.jmzfile.feign.RemoteFileService;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.List;
 import com.jmz.serveruser.entity.User;
+import com.jmz.serveraccount.entity.UserAccount;
 
 @RestController
 
@@ -35,7 +36,7 @@ public class LoginUserController {
     @Autowired
     private UserService userService;
     @Autowired
-    private UserAccountService userAccountService;
+    private UserAccountFeignClient userAccountFeignClient;
     @Autowired
     private RemoteFileService remoteFileService;
     @Autowired
@@ -60,8 +61,15 @@ public class LoginUserController {
     public R getUserProfile() {
         LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         UserInfoVo userInfo = userService.getUserInfoById(loginUser.getUserId());
-        AccountVO accountVO = userAccountService.getAccountByUserId(loginUser.getUserId()) != null ?
-                userAccountService.getAccountDetail(userAccountService.getAccountByUserId(loginUser.getUserId()).getId()) : null;
+        R accountResult = userAccountFeignClient.getAccountByUserId(loginUser.getUserId());
+        AccountVO accountVO = null;
+        if (accountResult != null && accountResult.isSuccess() && accountResult.get(R.DATA_TAG) != null) {
+            Long accountId = ((com.jmz.serveraccount.entity.UserAccount) accountResult.get(R.DATA_TAG)).getId();
+            R detailResult = userAccountFeignClient.getAccountDetail(accountId);
+            if (detailResult != null && detailResult.isSuccess()) {
+                accountVO = (AccountVO) detailResult.get(R.DATA_TAG);
+            }
+        }
         return R.success("获取用户信息成功", new Object[]{userInfo, accountVO});
     }
 
