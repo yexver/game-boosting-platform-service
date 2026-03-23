@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.jmz.jmzcommoncore.responseResult.R;
+import com.jmz.serverwebsocket.feign.WebSocketFeignClient;
 import com.jmz.serverorder.dto.MessagesQueryDTO;
 import com.jmz.serverorder.dto.SendMessageDTO;
 import com.jmz.serverorder.entity.Message;
@@ -38,6 +39,9 @@ public class MessagesServiceImpl implements MessageServices {
 
     @Autowired
     private RemoteFileService remoteFileService;
+
+    @Autowired
+    private WebSocketFeignClient webSocketFeignClient;
 
     private Long getCurrentUserId() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -262,6 +266,45 @@ public class MessagesServiceImpl implements MessageServices {
         }
 
         messageMapper.insert(message);
+
+        // 通过 WebSocket 实时推送消息给接收者
+        try {
+            Long receiverId = message.getReceiverId();
+            Long senderId = message.getSenderId();
+
+            // 获取发送者信息用于显示
+            String senderUsername = null;
+            try {
+                R senderResult = userFeignClient.getUserById(senderId);
+                if (senderResult.isSuccess()) {
+                    Object data = senderResult.get(R.DATA_TAG);
+                    if (data instanceof Map) {
+                        senderUsername = (String) ((Map<String, Object>) data).get("username");
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("获取发送者信息失败: {}", e.getMessage());
+            }
+
+            Map<String, Object> wsData = new HashMap<>();
+            wsData.put("id", message.getId());
+            wsData.put("content", message.getContent());
+            wsData.put("senderId", senderId);
+            wsData.put("senderUsername", senderUsername != null ? senderUsername : "");
+            wsData.put("senderType", message.getSenderType());
+            wsData.put("receiverId", receiverId);
+            wsData.put("messageType", message.getMessageType());
+            wsData.put("fileUrl", message.getFileUrl());
+            wsData.put("orderId", message.getOrderId());
+            wsData.put("isRead", false);
+            wsData.put("createdAt", message.getCreatedAt());
+            wsData.put("timestamp", System.currentTimeMillis());
+
+            webSocketFeignClient.pushNewMessage(receiverId, wsData);
+            log.info("WebSocket 推送消息成功: receiverId={}, messageId={}", receiverId, message.getId());
+        } catch (Exception e) {
+            log.error("WebSocket 推送消息失败: {}", e.getMessage(), e);
+        }
 
         SendMessageResponseVO response = new SendMessageResponseVO();
         response.setId(message.getId());

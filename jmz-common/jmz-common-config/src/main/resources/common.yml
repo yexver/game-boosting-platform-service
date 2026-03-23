@@ -1,0 +1,14 @@
+# ===========================================
+# Nacos 配置 - 公共配置 (common.yml)
+# 分组: dev
+# ===========================================
+jmz:
+  game-boosting:
+    nacos:
+      server:
+        url: localhost
+        port: 8848
+    redis:
+      url: localhost
+      port: 6379
+      password:

@@ -74,8 +74,9 @@ public class MessagesController {
         dto.setSenderType(senderType);
         dto.setMessageType(messageType);
         dto.setOrderId(orderId);
-        
+
         SendMessageResponseVO response = messageService.sendMessage(dto, images);
+
         return R.success(response);
     }
 
@@ -102,6 +103,7 @@ public class MessagesController {
 
         dto.setReceiverId(order.getPublisherId());
         SendMessageResponseVO response = messageService.sendMessage(dto, images);
+
         return R.success(response);
     }
 

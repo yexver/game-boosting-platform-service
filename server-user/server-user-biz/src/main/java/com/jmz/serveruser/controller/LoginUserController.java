@@ -11,6 +11,7 @@ import com.jmz.serveruser.dto.UpdateUserDTO;
 import com.jmz.serveruser.vo.UserInfoVo;
 import com.jmz.jmzfile.feign.RemoteFileService;
 import lombok.Data;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -41,6 +42,8 @@ public class LoginUserController {
     private RemoteFileService remoteFileService;
     @Autowired
     private UserGameBoostingService userGameBoostingService;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     /**
      * 获取当前用户信息
@@ -64,10 +67,11 @@ public class LoginUserController {
         R accountResult = userAccountFeignClient.getAccountByUserId(loginUser.getUserId());
         AccountVO accountVO = null;
         if (accountResult != null && accountResult.isSuccess() && accountResult.get(R.DATA_TAG) != null) {
-            Long accountId = ((com.jmz.serveraccount.entity.UserAccount) accountResult.get(R.DATA_TAG)).getId();
+            UserAccount account = objectMapper.convertValue(accountResult.get(R.DATA_TAG), UserAccount.class);
+            Long accountId = account.getId();
             R detailResult = userAccountFeignClient.getAccountDetail(accountId);
             if (detailResult != null && detailResult.isSuccess()) {
-                accountVO = (AccountVO) detailResult.get(R.DATA_TAG);
+                accountVO = objectMapper.convertValue(detailResult.get(R.DATA_TAG), AccountVO.class);
             }
         }
         return R.success("获取用户信息成功", new Object[]{userInfo, accountVO});

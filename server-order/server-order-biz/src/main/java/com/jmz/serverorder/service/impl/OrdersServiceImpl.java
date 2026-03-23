@@ -51,6 +51,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.jmz.serverorder.service.MessageServices;
 import com.jmz.serverorder.dto.SendMessageDTO;
 import com.jmz.serverorder.vo.SendMessageResponseVO;
+import com.jmz.serverwebsocket.feign.WebSocketFeignClient;
 
 import java.math.RoundingMode;
 import com.jmz.serverorder.vo.GameOrderDistributionVO;
@@ -83,6 +84,9 @@ public class OrdersServiceImpl implements OrdersService {
 
     @Autowired
     private MessageServices messageServices;
+
+    @Autowired
+    private WebSocketFeignClient webSocketFeignClient;
 
     private UserInfoVo convertMapToUserInfoVo(Map<String, Object> userMap) {
         if (userMap == null) return null;
@@ -186,6 +190,26 @@ public class OrdersServiceImpl implements OrdersService {
         message.setIsRead(0);
         message.setCreatedAt(new Date());
         messageMapper.insert(message);
+
+        // 通过 WebSocket 实时推送消息给发单人
+        try {
+            Map<String, Object> wsData = new HashMap<>();
+            wsData.put("id", message.getId());
+            wsData.put("content", message.getContent());
+            wsData.put("senderId", 0L);
+            wsData.put("senderUsername", "系统");
+            wsData.put("senderType", 2);
+            wsData.put("receiverId", publisherId);
+            wsData.put("messageType", 1);
+            wsData.put("orderId", order.getId());
+            wsData.put("isRead", false);
+            wsData.put("createdAt", message.getCreatedAt());
+            wsData.put("timestamp", System.currentTimeMillis());
+            webSocketFeignClient.pushNewMessage(publisherId, wsData);
+            log.info("订单创建 WebSocket 推送成功: publisherId={}, orderId={}", publisherId, order.getId());
+        } catch (Exception e) {
+            log.error("订单创建 WebSocket 推送失败: publisherId={}, error={}", publisherId, e.getMessage());
+        }
 
         return order.getId();
     }

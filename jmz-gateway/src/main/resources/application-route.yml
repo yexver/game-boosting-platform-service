@@ -7,6 +7,7 @@ spring:
             allowed-origin-patterns: '*'
             allowed-headers: '*'
             allowed-methods: '*'
+            allow-credentials: true
       routes:
         - id: jmz-security
           uri: lb://jmz-security
@@ -65,3 +66,12 @@ spring:
                 match-trailing-slash: true
           filters:
             - RewritePath=/server-account/?(?<segment>.*), /$\{segment}
+
+        # WebSocket 路由（直接透传，不重写路径，因为后端端点也是 /ws）
+        # 双跳 + 网关默认不向转发端带 sec-websocket* 头 → 浏览器若协商 deflate 而后端无扩展会 1002；显式去掉扩展头 + Nacos 同配置见 jmz-gateway-dev.yml
+        - id: server-order-websocket
+          uri: lb://server-order
+          predicates:
+            - Path=/ws,/ws/**
+          filters:
+            - RemoveRequestHeader=Sec-WebSocket-Extensions

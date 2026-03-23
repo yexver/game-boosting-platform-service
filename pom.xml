@@ -19,6 +19,7 @@
         <module>jmz-file</module>
         <module>server-ai</module>
         <module>server-account</module>
+        <module>server-websocket</module>
     </modules>
     <properties>
         <maven.compiler.source>17</maven.compiler.source>

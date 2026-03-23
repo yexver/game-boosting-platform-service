@@ -12,7 +12,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
  */
 @SpringBootApplication
 @EnableDiscoveryClient
-@EnableFeignClients(basePackages = {"com.jmz.jmzfile.feign", "com.jmz.serveruser.feign", "com.jmz.serveraccount.feign"}, defaultConfiguration = FeignConfig.class)
+@EnableFeignClients(basePackages = {"com.jmz.jmzfile.feign", "com.jmz.serveruser.feign", "com.jmz.serveraccount.feign", "com.jmz.serverwebsocket.feign"}, defaultConfiguration = FeignConfig.class)
 @MapperScan("com.jmz.serverorder.mapper")
 public class ServerOrderApplication {
 

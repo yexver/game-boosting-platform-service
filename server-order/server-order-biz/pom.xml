@@ -33,11 +33,12 @@
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
-        <!-- web安全模块 -->
+        <!-- Web安全模块 -->
         <dependency>
             <groupId>com.jmz</groupId>
             <artifactId>jmz-common-security</artifactId>
         </dependency>
+
         <!-- 注册中心客户端 -->
         <dependency>
             <groupId>com.alibaba.cloud</groupId>
@@ -87,6 +88,13 @@
         <dependency>
             <groupId>com.jmz</groupId>
             <artifactId>server-account-api</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
+        <!-- WebSocket 服务客户端（通过 Feign 调用 server-websocket） -->
+        <dependency>
+            <groupId>com.jmz</groupId>
+            <artifactId>server-websocket-api</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>

@@ -8,9 +8,39 @@ import io.jsonwebtoken.security.Keys;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 public class JwtUtil {
+
+    /**
+     * 验证 token 是否有效
+     *
+     * @param secretKey jwt秘钥
+     * @param token     token
+     * @return 是否有效
+     */
+    public static boolean checkToken(String secretKey, String token) {
+        try {
+            parseJWT(secretKey, token);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * 从 token 中解析用户信息
+     *
+     * @param secretKey jwt秘钥
+     * @param token     token
+     * @return 用户信息
+     */
+    public static Map<String, Object> getUserInfo(String secretKey, String token) {
+        Claims claims = parseJWT(secretKey, token);
+        return new HashMap<>(claims);
+    }
+
     /**
      * 生成无过期时间的jwt
      * 使用Hs256算法, 私匙使用固定秘钥

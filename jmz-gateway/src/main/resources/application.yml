@@ -18,6 +18,20 @@ spring:
       server-addr: ${jmz.game-boosting.nacos.server.url}:${jmz.game-boosting.nacos.server.port}
       config:
         namespace: ${NACOS_NAMESPACE:dev}
+    gateway:
+      globalcors:
+        globalCorsConfigurationSource:
+          allowedOriginPatterns: "*"
+          allowedMethods:
+            - GET
+            - POST
+            - PUT
+            - DELETE
+            - OPTIONS
+          allowedHeaders:
+            - "*"
+          allowCredentials: true
+          maxAge: 3600
     openfeign:
       client:
         config:

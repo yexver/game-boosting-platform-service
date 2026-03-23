@@ -1,0 +1,40 @@
+# ===========================================
+# Nacos 配置 - 文件服务配置 (jmz-file.yml)
+# 分组: dev
+# ===========================================
+spring:
+  data:
+    redis:
+      host: ${jmz.game-boosting.redis.url}
+      port: ${jmz.game-boosting.redis.port}
+      password: ${jmz.game-boosting.redis.password:}
+      database: 1
+      lettuce:
+        pool:
+          max-active: 20
+          max-idle: 10
+          min-idle: 5
+          max-wait: 5000ms
+        shutdown-timeout: 5000ms
+      timeout: 10000ms
+      retry:
+        max-attempts: 5
+        delay: 1000ms
+
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 100MB
+      file-size-threshold: 0
+
+oss:
+  endpoint: https://oss-cn-guangzhou.aliyuncs.com
+  accessKeyId: your-aliyun-access-key-id
+  accessKeySecret: your-aliyun-access-key-secret
+  bucketName: game-boosting
+  region: cn-guangzhou
+  accessUrl: https://game-boosting.oss-cn-guangzhou.aliyuncs.com
+
+logging:
+  level:
+    com.jmz: DEBUG

@@ -1,0 +1,62 @@
+# ===========================================
+# Nacos 配置 - 认证服务配置 (jmz-security.yml)
+# 分组: dev
+# ===========================================
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/game-boosting-platform-jmz-service?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      connection-timeout: 5000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      pool-name: SecurityHikariPool
+  data:
+    redis:
+      host: ${jmz.game-boosting.redis.url}
+      port: ${jmz.game-boosting.redis.port}
+      password: ${jmz.game-boosting.redis.password:}
+      database: 1
+      lettuce:
+        pool:
+          max-active: 20
+          max-idle: 10
+          min-idle: 5
+          max-wait: 5000ms
+        shutdown-timeout: 5000ms
+      timeout: 10000ms
+      retry:
+        max-attempts: 5
+        delay: 1000ms
+
+jwt:
+  secretKey: KbPeShVmYq3t6w9z$C&F)H@McQfTjWnZr4u7x!A%D*G-JaNdRgU
+  expiration: 8640000
+  header: Authorization
+
+captcha:
+  type: math
+  enable: true
+
+aliyun:
+  sms:
+    host: https://dfsns.market.alicloudapi.com
+    path: /data/send_sms
+    method: POST
+    appcode: your-appcode-here
+    template_id: CST_ptdie100
+
+mybatis-plus:
+  mapper-locations: classpath*:/mappers/**/*Mapper.xml
+  type-aliases-package: com.jmz.jmzsecurity.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+logging:
+  level:
+    org.springframework.security: DEBUG

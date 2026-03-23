@@ -43,7 +43,11 @@ public class SecurityConfig {
                 "http://localhost:8848",
                 "http://localhost:9999",
                 "http://localhost:5172",
-                "http://localhost:5173"
+                "http://localhost:5173",
+                "http://127.0.0.1:8848",
+                "http://127.0.0.1:9999",
+                "http://127.0.0.1:5172",
+                "http://127.0.0.1:5173"
         ));     //config.addAllowedOrigin("*"); //允许所有域名
         config.addAllowedHeader("*"); // 允许所有头部
         config.addAllowedMethod("*"); // 允许所有HTTP方法
@@ -55,7 +59,9 @@ public class SecurityConfig {
         http.authorizeHttpRequests((requests) -> requests
                         // 对于登录login 注册register 验证码captchaImage 允许匿名访问
                         .requestMatchers("/login", "/register", "/test/*", "/captchaImage","/sendVerificationCode","/homePage/**","/games/**"
-                                ,"/orders/**","/systems/getAll","servers/getAll","/user/getUserInfoById/**","/alipay/**").permitAll()
+                                ,"/orders/**","/systems/getAll","servers/getAll","/user/getUserInfoById/**","/alipay/**"
+                                // WebSocket：须同时匹配 /ws 与 /ws/**（token 在查询串，不走 Authorization）
+                                ,"/ws", "/ws/**").permitAll()
                         // 静态资源，可匿名访问，这一行配置只放行了特定的静态资源路径和根路径的GET请求。
                         .requestMatchers(HttpMethod.GET, "/", "/avatar/**","/shopImage/**","/productImage/**","/*.html", "/profile/**").permitAll()
                         .requestMatchers("/swagger-ui.html", "/swagger-resources/**", "/webjars/**", "/*/api-docs", "/druid/**").permitAll()

@@ -1,0 +1,83 @@
+# ===========================================
+# Nacos 配置 - 网关路由配置 (jmz-gateway-dev.yml)
+# 分组: dev
+# ===========================================
+spring:
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowed-origin-patterns: '*'
+            allowed-headers: '*'
+            allowed-methods: '*'
+            allow-credentials: true
+            max-age: 3600
+      routes:
+        # 认证服务
+        - id: jmz-security
+          uri: lb://jmz-security
+          predicates:
+            - name: Path
+              args:
+                pattern: /jmz-security/**
+                match-trailing-slash: true
+          filters:
+            - RewritePath=/jmz-security/?(?<segment>.*), /$\{segment}
+        # 文件服务
+        - id: jmz-file
+          uri: lb://jmz-file
+          predicates:
+            - name: Path
+              args:
+                pattern: /jmz-file/**
+                match-trailing-slash: true
+          filters:
+            - RewritePath=/jmz-file/?(?<segment>.*), /$\{segment}
+        # 用户服务
+        - id: server-user
+          uri: lb://server-user
+          predicates:
+            - name: Path
+              args:
+                pattern: /server-user/**
+                match-trailing-slash: true
+          filters:
+            - RewritePath=/server-user/?(?<segment>.*), /$\{segment}
+        # 订单服务
+        - id: server-order
+          uri: lb://server-order
+          predicates:
+            - name: Path
+              args:
+                pattern: /server-order/**
+                match-trailing-slash: true
+          filters:
+            - RewritePath=/server-order/?(?<segment>.*), /$\{segment}
+        # 账户服务
+        - id: server-account
+          uri: lb://server-account
+          predicates:
+            - name: Path
+              args:
+                pattern: /server-account/**
+                match-trailing-slash: true
+          filters:
+            - RewritePath=/server-account/?(?<segment>.*), /$\{segment}
+        # AI服务
+        - id: server-ai
+          uri: lb://server-ai
+          predicates:
+            - name: Path
+              args:
+                pattern: /server-ai/**
+                match-trailing-slash: true
+          filters:
+            - RewritePath=/server-ai/?(?<segment>.*), /$\{segment}
+        # WebSocket：须与 application-route.yml 一致；若 Nacos 覆盖路由而缺少本段，/ws 将不走正确转发
+        - id: server-order-websocket
+          uri: lb://server-order
+          predicates:
+            - Path=/ws,/ws/**
+          filters:
+            - RemoveRequestHeader=Sec-WebSocket-Extensions

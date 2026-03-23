@@ -39,6 +39,12 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
     private final TokenService tokenService;
 
     @Override
+    protected boolean shouldNotFilter(@Nonnull HttpServletRequest request) {
+        String path = request.getServletPath();
+        return path != null && ("/ws".equals(path) || path.startsWith("/ws/"));
+    }
+
+    @Override
     protected void doFilterInternal(@Nonnull HttpServletRequest request,
                                     @Nonnull HttpServletResponse response,
                                     @Nonnull FilterChain chain) throws ServletException, IOException {

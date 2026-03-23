@@ -12,16 +12,15 @@ import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.cloud.openfeign.support.SpringDecoder;
 import org.springframework.cloud.openfeign.support.SpringEncoder;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.util.StringUtils;
 
 /**
- * Feign配置类
+ * Feign 专用配置（通过 {@code @EnableFeignClients(defaultConfiguration = ...)} 引用）。
+ * <p>不要加 {@code @Configuration}，否则 Bean 会进入主容器，Feign 子上下文可能无法应用 {@link RequestInterceptor}，导致下游收不到 Authorization 而 403。</p>
  */
-@Configuration
 public class FeignConfig {
 
     @Bean
@@ -38,6 +37,7 @@ public class FeignConfig {
     public Decoder feignDecoder(ObjectFactory<HttpMessageConverters> messageConverters) {
         return new SpringDecoder(messageConverters);
     }
+
     @Bean
     public RequestInterceptor requestInterceptor() {
         return new RequestInterceptor() {
@@ -54,4 +54,4 @@ public class FeignConfig {
             }
         };
     }
-} 
+}

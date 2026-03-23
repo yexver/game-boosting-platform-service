@@ -1,5 +1,6 @@
 package com.jmz.serveraccount;
 
+import com.jmz.serveraccount.config.FeignConfig;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -8,7 +9,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
 @EnableDiscoveryClient
-@EnableFeignClients(basePackages = {"com.jmz.jmzfile.feign", "com.jmz.serveruser.feign"})
+@EnableFeignClients(basePackages = {"com.jmz.jmzfile.feign", "com.jmz.serveruser.feign"}, defaultConfiguration = FeignConfig.class)
 @MapperScan("com.jmz.serveraccount.mapper")
 public class ServerAccountApplication {
 
