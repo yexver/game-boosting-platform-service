@@ -36,6 +36,7 @@ import com.jmz.serveruser.vo.UserInfoVo;
 
 import java.util.*;
 import com.jmz.serveraccount.feign.UserAccountFeignClient;
+import com.jmz.serveraccount.enums.AccountTypeEnum;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.jmz.serveruser.entity.User;
 import com.jmz.serverorder.mapper.UserMapper;
@@ -171,7 +172,7 @@ public class OrdersServiceImpl implements OrdersService {
         AccountAdjustDTO adjustDTO = new AccountAdjustDTO();
         adjustDTO.setUserId(publisherId);
         adjustDTO.setAmount(dto.getPrice()); // 假设冻结全部订单金额
-        adjustDTO.setType(7); // 7=冻结，具体类型可根据业务调整
+        adjustDTO.setType(AccountTypeEnum.FREEZE); // 冻结
         adjustDTO.setRemark("订单提交冻结资金，订单号:" + order.getOrderNo());
         R freezeResult = userAccountFeignClient.adjustAccountBalance(adjustDTO);
         if (freezeResult == null || !freezeResult.isSuccess()) {
@@ -253,7 +254,7 @@ public class OrdersServiceImpl implements OrdersService {
         AccountAdjustDTO adjustDTO = new AccountAdjustDTO();
         adjustDTO.setUserId(publisherId);
         adjustDTO.setAmount(order.getPrice());
-        adjustDTO.setType(8); // 解冻/扣除冻结金额
+        adjustDTO.setType(AccountTypeEnum.FROZEN_DEDUCT); // 解冻/扣除冻结金额
         adjustDTO.setRemark("订单完成解冻/扣除冻结资金，订单号:" + order.getOrderNo());
         R unfreezeResult = userAccountFeignClient.unfreezeAccount(adjustDTO);
         if (unfreezeResult == null || !unfreezeResult.isSuccess()) {
@@ -320,7 +321,7 @@ public class OrdersServiceImpl implements OrdersService {
         AccountAdjustDTO takerAdjustDTO = new AccountAdjustDTO();
         takerAdjustDTO.setUserId(takerId);
         takerAdjustDTO.setAmount(order.getPrice()); // 冻结订单金额
-        takerAdjustDTO.setType(7); // 7=冻结，具体类型可根据业务调整
+        takerAdjustDTO.setType(AccountTypeEnum.FREEZE);
         takerAdjustDTO.setRemark("接单冻结资金，订单号:" + order.getOrderNo());
         R takerFreezeResult = userAccountFeignClient.adjustAccountBalance(takerAdjustDTO);
         if (takerFreezeResult == null || !takerFreezeResult.isSuccess()) {
@@ -723,7 +724,7 @@ public class OrdersServiceImpl implements OrdersService {
         AccountAdjustDTO publisherUnfreezePrice = new AccountAdjustDTO();
         publisherUnfreezePrice.setUserId(order.getPublisherId());
         publisherUnfreezePrice.setAmount(orderPrice); // 订单金额
-        publisherUnfreezePrice.setType(8); // 8=解冻并扣除冻结金额
+        publisherUnfreezePrice.setType(AccountTypeEnum.FROZEN_DEDUCT); // 解冻并扣除冻结金额
         publisherUnfreezePrice.setRemark("订单验收结算，订单号:" + order.getOrderNo());
         publisherUnfreezePrice.setOrderId(order.getId());
         userAccountFeignClient.adjustAccountBalance(publisherUnfreezePrice);
@@ -736,7 +737,7 @@ public class OrdersServiceImpl implements OrdersService {
         AccountAdjustDTO takerDepositUnfreeze = new AccountAdjustDTO();
         takerDepositUnfreeze.setUserId(order.getTakerId());
         takerDepositUnfreeze.setAmount(totalDeposit);
-        takerDepositUnfreeze.setType(8); // 8=解冻并扣除冻结金额
+        takerDepositUnfreeze.setType(AccountTypeEnum.FROZEN_DEDUCT); // 解冻并扣除冻结金额
         takerDepositUnfreeze.setRemark("订单验收保证金结算，订单号:" + order.getOrderNo());
         takerDepositUnfreeze.setOrderId(order.getId());
         userAccountFeignClient.adjustAccountBalance(takerDepositUnfreeze);
@@ -746,7 +747,7 @@ public class OrdersServiceImpl implements OrdersService {
             AccountAdjustDTO publisherAddDeposit = new AccountAdjustDTO();
             publisherAddDeposit.setUserId(order.getPublisherId());
             publisherAddDeposit.setAmount(deposit);
-            publisherAddDeposit.setType(1); // 1=增加余额
+            publisherAddDeposit.setType(AccountTypeEnum.INCOME); // 1=增加余额
             publisherAddDeposit.setRemark("订单验收保证金赔付，订单号:" + order.getOrderNo());
             publisherAddDeposit.setOrderId(order.getId());
             userAccountFeignClient.adjustAccountBalance(publisherAddDeposit);
@@ -758,7 +759,7 @@ public class OrdersServiceImpl implements OrdersService {
             AccountAdjustDTO takerReturnDepositDto = new AccountAdjustDTO();
             takerReturnDepositDto.setUserId(order.getTakerId());
             takerReturnDepositDto.setAmount(takerReturnDeposit);
-            takerReturnDepositDto.setType(1); // 1=增加余额
+            takerReturnDepositDto.setType(AccountTypeEnum.INCOME); // 1=增加余额
             takerReturnDepositDto.setRemark("订单验收返还保证金，订单号:" + order.getOrderNo());
             takerReturnDepositDto.setOrderId(order.getId());
             userAccountFeignClient.adjustAccountBalance(takerReturnDepositDto);
@@ -768,7 +769,7 @@ public class OrdersServiceImpl implements OrdersService {
         AccountAdjustDTO takerAdd = new AccountAdjustDTO();
         takerAdd.setUserId(order.getTakerId());
         takerAdd.setAmount(takerIncome); // takerIncome = orderPrice.subtract(platformFee)
-        takerAdd.setType(1); // 1=增加余额
+        takerAdd.setType(AccountTypeEnum.INCOME); // 1=增加余额
         takerAdd.setRemark("订单验收结算，订单号:" + order.getOrderNo() + "，已扣除平台服务费" + platformFee + "元");
         takerAdd.setOrderId(order.getId());
         userAccountFeignClient.adjustAccountBalance(takerAdd);
@@ -841,7 +842,7 @@ public class OrdersServiceImpl implements OrdersService {
         AccountAdjustDTO unfreezeDTO = new AccountAdjustDTO();
         unfreezeDTO.setUserId(order.getPublisherId());
         unfreezeDTO.setAmount(order.getPrice());
-        unfreezeDTO.setType(8); // 解冻并扣除
+        unfreezeDTO.setType(AccountTypeEnum.FROZEN_DEDUCT); // 解冻并扣除
         unfreezeDTO.setRemark("订单取消解冻资金，订单号:" + order.getOrderNo());
         unfreezeDTO.setOrderId(order.getId());
         userAccountFeignClient.adjustAccountBalance(unfreezeDTO);
@@ -850,7 +851,7 @@ public class OrdersServiceImpl implements OrdersService {
         AccountAdjustDTO returnDTO = new AccountAdjustDTO();
         returnDTO.setUserId(order.getPublisherId());
         returnDTO.setAmount(order.getPrice());
-        returnDTO.setType(1); // 增加余额
+        returnDTO.setType(AccountTypeEnum.INCOME); // 增加余额
         returnDTO.setRemark("订单取消返还资金，订单号:" + order.getOrderNo());
         returnDTO.setOrderId(order.getId());
         userAccountFeignClient.adjustAccountBalance(returnDTO);
@@ -917,7 +918,7 @@ public class OrdersServiceImpl implements OrdersService {
         AccountAdjustDTO publisherUnfreeze = new AccountAdjustDTO();
         publisherUnfreeze.setUserId(order.getPublisherId());
         publisherUnfreeze.setAmount(orderPrice);
-        publisherUnfreeze.setType(8);
+        publisherUnfreeze.setType(AccountTypeEnum.FROZEN_DEDUCT);
         publisherUnfreeze.setRemark("订单撤销结算，订单号:" + order.getOrderNo());
         publisherUnfreeze.setOrderId(order.getId());
         userAccountFeignClient.adjustAccountBalance(publisherUnfreeze);
@@ -927,7 +928,7 @@ public class OrdersServiceImpl implements OrdersService {
             AccountAdjustDTO publisherReturnDto = new AccountAdjustDTO();
             publisherReturnDto.setUserId(order.getPublisherId());
             publisherReturnDto.setAmount(publisherReturn);
-            publisherReturnDto.setType(1);
+            publisherReturnDto.setType(AccountTypeEnum.INCOME);
             publisherReturnDto.setRemark("订单撤销返还，订单号:" + order.getOrderNo());
             publisherReturnDto.setOrderId(order.getId());
             userAccountFeignClient.adjustAccountBalance(publisherReturnDto);
@@ -937,7 +938,7 @@ public class OrdersServiceImpl implements OrdersService {
             AccountAdjustDTO takerAdd = new AccountAdjustDTO();
             takerAdd.setUserId(order.getTakerId());
             takerAdd.setAmount(applyPrice);
-            takerAdd.setType(1);
+            takerAdd.setType(AccountTypeEnum.INCOME);
             takerAdd.setRemark("订单撤销结算，订单号:" + order.getOrderNo());
             takerAdd.setOrderId(order.getId());
             userAccountFeignClient.adjustAccountBalance(takerAdd);
@@ -946,7 +947,7 @@ public class OrdersServiceImpl implements OrdersService {
         AccountAdjustDTO takerDepositUnfreeze = new AccountAdjustDTO();
         takerDepositUnfreeze.setUserId(order.getTakerId());
         takerDepositUnfreeze.setAmount(orderDeposit);
-        takerDepositUnfreeze.setType(8);
+        takerDepositUnfreeze.setType(AccountTypeEnum.FROZEN_DEDUCT);
         takerDepositUnfreeze.setRemark("订单撤销保证金结算，订单号:" + order.getOrderNo());
         takerDepositUnfreeze.setOrderId(order.getId());
         userAccountFeignClient.adjustAccountBalance(takerDepositUnfreeze);
@@ -955,7 +956,7 @@ public class OrdersServiceImpl implements OrdersService {
             AccountAdjustDTO publisherAddDeposit = new AccountAdjustDTO();
             publisherAddDeposit.setUserId(order.getPublisherId());
             publisherAddDeposit.setAmount(applyDeposit);
-            publisherAddDeposit.setType(1);
+            publisherAddDeposit.setType(AccountTypeEnum.INCOME);
             publisherAddDeposit.setRemark("订单撤销保证金收入，订单号:" + order.getOrderNo());
             publisherAddDeposit.setOrderId(order.getId());
             userAccountFeignClient.adjustAccountBalance(publisherAddDeposit);
@@ -966,7 +967,7 @@ public class OrdersServiceImpl implements OrdersService {
             AccountAdjustDTO takerReturnDepositDto = new AccountAdjustDTO();
             takerReturnDepositDto.setUserId(order.getTakerId());
             takerReturnDepositDto.setAmount(takerReturnDeposit);
-            takerReturnDepositDto.setType(1);
+            takerReturnDepositDto.setType(AccountTypeEnum.INCOME);
             takerReturnDepositDto.setRemark("订单撤销返还保证金，订单号:" + order.getOrderNo());
             takerReturnDepositDto.setOrderId(order.getId());
             userAccountFeignClient.adjustAccountBalance(takerReturnDepositDto);
@@ -1195,7 +1196,7 @@ public class OrdersServiceImpl implements OrdersService {
             AccountAdjustDTO publisherUnfreeze = new AccountAdjustDTO();
             publisherUnfreeze.setUserId(order.getPublisherId());
             publisherUnfreeze.setAmount(order.getPrice()); // amount = orderPrice
-            publisherUnfreeze.setType(8); // 8=解冻并扣除冻结金额
+            publisherUnfreeze.setType(AccountTypeEnum.FROZEN_DEDUCT); // 8=解冻并扣除冻结金额
             publisherUnfreeze.setRemark("订单仲裁结算，订单号:" + order.getOrderNo());
             publisherUnfreeze.setOrderId(order.getId());
             userAccountFeignClient.adjustAccountBalance(publisherUnfreeze);
@@ -1204,7 +1205,7 @@ public class OrdersServiceImpl implements OrdersService {
                 AccountAdjustDTO takerAdd = new AccountAdjustDTO();
                 takerAdd.setUserId(order.getTakerId());
                 takerAdd.setAmount(payAmount);
-                takerAdd.setType(1); // 1=增加余额
+                takerAdd.setType(AccountTypeEnum.INCOME); // 1=增加余额
                 takerAdd.setRemark("订单仲裁赔付，订单号:" + order.getOrderNo());
                 takerAdd.setOrderId(order.getId());
                 userAccountFeignClient.adjustAccountBalance(takerAdd);
@@ -1215,7 +1216,7 @@ public class OrdersServiceImpl implements OrdersService {
                 AccountAdjustDTO publisherReturnDto = new AccountAdjustDTO();
                 publisherReturnDto.setUserId(order.getPublisherId());
                 publisherReturnDto.setAmount(publisherReturn);
-                publisherReturnDto.setType(1);
+                publisherReturnDto.setType(AccountTypeEnum.INCOME);
                 publisherReturnDto.setRemark("订单仲裁返还，订单号:" + order.getOrderNo());
                 publisherReturnDto.setOrderId(order.getId());
                 userAccountFeignClient.adjustAccountBalance(publisherReturnDto);
@@ -1225,7 +1226,7 @@ public class OrdersServiceImpl implements OrdersService {
             AccountAdjustDTO takerDepositUnfreeze = new AccountAdjustDTO();
             takerDepositUnfreeze.setUserId(order.getTakerId());
             takerDepositUnfreeze.setAmount(order.getSecurityDeposit().add(order.getEfficiencyDeposit())); // amount = totalDeposit
-            takerDepositUnfreeze.setType(8); // 8=解冻并扣除冻结金额
+            takerDepositUnfreeze.setType(AccountTypeEnum.FROZEN_DEDUCT); // 解冻并扣除冻结金额
             takerDepositUnfreeze.setRemark("订单仲裁保证金结算，订单号:" + order.getOrderNo());
             takerDepositUnfreeze.setOrderId(order.getId());
             userAccountFeignClient.adjustAccountBalance(takerDepositUnfreeze);
@@ -1234,7 +1235,7 @@ public class OrdersServiceImpl implements OrdersService {
                 AccountAdjustDTO publisherAddDeposit = new AccountAdjustDTO();
                 publisherAddDeposit.setUserId(order.getPublisherId());
                 publisherAddDeposit.setAmount(depositAmount);
-                publisherAddDeposit.setType(1);
+                publisherAddDeposit.setType(AccountTypeEnum.INCOME);
                 publisherAddDeposit.setRemark("订单仲裁赔付保证金，订单号:" + order.getOrderNo());
                 publisherAddDeposit.setOrderId(order.getId());
                 userAccountFeignClient.adjustAccountBalance(publisherAddDeposit);
@@ -1245,7 +1246,7 @@ public class OrdersServiceImpl implements OrdersService {
                 AccountAdjustDTO takerReturnDepositDto = new AccountAdjustDTO();
                 takerReturnDepositDto.setUserId(order.getTakerId());
                 takerReturnDepositDto.setAmount(takerReturnDeposit);
-                takerReturnDepositDto.setType(1);
+                takerReturnDepositDto.setType(AccountTypeEnum.INCOME);
                 takerReturnDepositDto.setRemark("订单仲裁返还保证金，订单号:" + order.getOrderNo());
                 takerReturnDepositDto.setOrderId(order.getId());
                 userAccountFeignClient.adjustAccountBalance(takerReturnDepositDto);

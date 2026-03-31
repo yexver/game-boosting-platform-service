@@ -36,6 +36,12 @@ public class Transaction {
 
     private BigDecimal balanceAfter;
 
+    private BigDecimal frozenBefore;
+
+    private BigDecimal frozenAfter;
+
+    private String idempotencyKey;
+
     private Integer status;
 
     private String remark;

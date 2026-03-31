@@ -28,4 +28,53 @@
         ORDER BY ua.created_at DESC
     </select>
 
+    <!-- 乐观锁原子扣减余额：余额+冻结 >= 扣减金额，防止超扣 -->
+    <update id="deductBalanceWithLock">
+        UPDATE tb_jmz_user_accounts
+        SET balance = balance - #{amount},
+            total_expense = total_expense + #{amount},
+            version = version + 1,
+            last_idempotency_key = #{idempotencyKey},
+            updated_at = NOW()
+        WHERE user_id = #{userId}
+          AND version = #{version}
+          AND (balance + frozen_amount) >= #{amount}
+    </update>
+
+    <!-- 乐观锁原子冻结资金：余额足够时才冻结 -->
+    <update id="freezeBalanceWithLock">
+        UPDATE tb_jmz_user_accounts
+        SET balance = balance - #{amount},
+            frozen_amount = frozen_amount + #{amount},
+            version = version + 1,
+            updated_at = NOW()
+        WHERE user_id = #{userId}
+          AND version = #{version}
+          AND balance >= #{amount}
+    </update>
+
+    <!-- 乐观锁原子解冻资金：冻结足够时才解冻 -->
+    <update id="unfreezeBalanceWithLock">
+        UPDATE tb_jmz_user_accounts
+        SET frozen_amount = frozen_amount - #{amount},
+            balance = balance + #{amount},
+            version = version + 1,
+            updated_at = NOW()
+        WHERE user_id = #{userId}
+          AND version = #{version}
+          AND frozen_amount >= #{amount}
+    </update>
+
+    <!-- 乐观锁原子扣除冻结金额 -->
+    <update id="deductFrozenWithLock">
+        UPDATE tb_jmz_user_accounts
+        SET frozen_amount = frozen_amount - #{amount},
+            total_expense = total_expense + #{amount},
+            version = version + 1,
+            updated_at = NOW()
+        WHERE user_id = #{userId}
+          AND version = #{version}
+          AND frozen_amount >= #{amount}
+    </update>
+
 </mapper>

@@ -5,6 +5,7 @@ import com.jmz.jmzcommoncore.responseResult.R;
 import com.jmz.serveraccount.dto.AccountAdjustDTO;
 import com.jmz.serveraccount.dto.AccountQueryDTO;
 import com.jmz.serveraccount.entity.UserAccount;
+import com.jmz.serveraccount.enums.AccountTypeEnum;
 import com.jmz.serveraccount.service.UserAccountService;
 import com.jmz.serveraccount.vo.AccountVO;
 import com.jmz.serveraccount.vo.TransactionVO;
@@ -56,7 +57,7 @@ public class UserAccountController {
 
     @PostMapping("/unfreeze")
     public R unfreezeAccount(@Validated @RequestBody AccountAdjustDTO adjustDTO) {
-        adjustDTO.setType(8);
+        adjustDTO.setType(AccountTypeEnum.FROZEN_DEDUCT);
         boolean success = userAccountService.adjustAccountBalance(adjustDTO);
         if (success) {
             return R.success("解冻/扣除冻结金额成功");

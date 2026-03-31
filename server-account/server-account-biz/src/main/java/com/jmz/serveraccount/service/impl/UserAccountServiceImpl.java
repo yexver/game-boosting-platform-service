@@ -10,6 +10,7 @@ import com.jmz.serveraccount.dto.AccountAdjustDTO;
 import com.jmz.serveraccount.dto.AccountQueryDTO;
 import com.jmz.serveraccount.entity.Transaction;
 import com.jmz.serveraccount.entity.UserAccount;
+import com.jmz.serveraccount.enums.AccountTypeEnum;
 import com.jmz.serveraccount.mapper.TransactionMapper;
 import com.jmz.serveraccount.mapper.UserAccountMapper;
 import com.jmz.serveraccount.service.UserAccountService;
@@ -54,6 +55,7 @@ public class UserAccountServiceImpl extends ServiceImpl<UserAccountMapper, UserA
         account.setFrozenAmount(BigDecimal.ZERO);
         account.setTotalIncome(BigDecimal.ZERO);
         account.setTotalExpense(BigDecimal.ZERO);
+        account.setVersion(0L);
         account.setCreatedAt(new Date());
         account.setUpdatedAt(new Date());
 
@@ -110,66 +112,96 @@ public class UserAccountServiceImpl extends ServiceImpl<UserAccountMapper, UserA
         BigDecimal balanceBefore = account.getBalance();
         BigDecimal frozenBefore = account.getFrozenAmount();
         BigDecimal amount = adjustDTO.getAmount();
+        Long currentVersion = account.getVersion();
 
-        if (adjustDTO.getType() == 1) {
-            account.setBalance(balanceBefore.add(amount));
-            account.setTotalIncome(account.getTotalIncome().add(amount));
-        } else if (adjustDTO.getType() == 2) {
-            if (balanceBefore.compareTo(amount) < 0) {
-                throw new RuntimeException("余额不足，无法提现");
+        AccountTypeEnum typeEnum = adjustDTO.getType();
+        if (typeEnum == null) {
+            throw new RuntimeException("调整类型不能为空");
+        }
+
+        // 记录操作后的余额快照（各操作类型不同）
+        BigDecimal balanceAfter = balanceBefore;
+        BigDecimal frozenAfter = frozenBefore;
+
+        // 根据操作类型分发到对应的原子方法
+        if (typeEnum.isDeduct()) {
+            // 扣减类：余额+冻结 >= 扣减金额，防止超扣
+            int rows = this.baseMapper.deductBalanceWithLock(
+                    adjustDTO.getUserId(), amount, currentVersion, adjustDTO.getIdempotencyKey());
+            if (rows == 0) {
+                throw new RuntimeException("余额不足或并发冲突，请稍后重试");
             }
-            account.setBalance(balanceBefore.subtract(amount));
-            account.setTotalExpense(account.getTotalExpense().add(amount));
-        } else if (adjustDTO.getType() == 6) {
-            if (frozenBefore.compareTo(amount) < 0) {
-                throw new RuntimeException("冻结金额不足，无法解冻");
-            }
-            account.setFrozenAmount(frozenBefore.subtract(amount));
-            account.setBalance(balanceBefore.add(amount));
-        } else if (adjustDTO.getType() == 7) {
-            if (balanceBefore.compareTo(amount) < 0) {
+            balanceAfter = balanceBefore.subtract(amount);
+
+        } else if (typeEnum.isFreeze()) {
+            // 冻结类：余额足够才冻结
+            int rows = this.baseMapper.freezeBalanceWithLock(
+                    adjustDTO.getUserId(), amount, currentVersion);
+            if (rows == 0) {
                 throw new RuntimeException("余额不足，无法冻结资金");
             }
-            account.setBalance(balanceBefore.subtract(amount));
-            account.setFrozenAmount(frozenBefore.add(amount));
-        } else if (adjustDTO.getType() == 8) {
-            if (frozenBefore.compareTo(amount) < 0) {
-                throw new RuntimeException("冻结金额不足，无法解冻/扣除");
-            }
-            account.setFrozenAmount(frozenBefore.subtract(amount));
-            account.setTotalExpense(account.getTotalExpense().add(amount));
-        } else if (adjustDTO.getType() == 9) {
+            balanceAfter = balanceBefore.subtract(amount);
+            frozenAfter = frozenBefore.add(amount);
+
+        } else if (typeEnum == AccountTypeEnum.UNFREEZE) {
+            // 解冻类：冻结足够才解冻，同时校验余额不超限（双重校验）
             if (balanceBefore.compareTo(amount) < 0) {
-                throw new RuntimeException("余额不足，无法扣款");
+                throw new RuntimeException("余额不足，无法解冻");
             }
-            account.setBalance(balanceBefore.subtract(amount));
-            account.setTotalExpense(account.getTotalExpense().add(amount));
+            int rows = this.baseMapper.unfreezeBalanceWithLock(
+                    adjustDTO.getUserId(), amount, currentVersion);
+            if (rows == 0) {
+                throw new RuntimeException("冻结金额不足，无法解冻");
+            }
+            balanceAfter = balanceBefore.add(amount);
+            frozenAfter = frozenBefore.subtract(amount);
+
+        } else if (typeEnum == AccountTypeEnum.FROZEN_DEDUCT) {
+            // 冻结扣除
+            int rows = this.baseMapper.deductFrozenWithLock(
+                    adjustDTO.getUserId(), amount, currentVersion);
+            if (rows == 0) {
+                throw new RuntimeException("冻结金额不足，无法扣除");
+            }
+            frozenAfter = frozenBefore.subtract(amount);
+
+        } else if (typeEnum.isAdd()) {
+            // 加款类：直接更新（加款无超扣风险）
+            account.setBalance(balanceBefore.add(amount));
+            account.setTotalIncome(account.getTotalIncome().add(amount));
+            account.setUpdatedAt(new Date());
+            if (!this.updateById(account)) {
+                throw new RuntimeException("并发冲突，请稍后重试");
+            }
+            balanceAfter = balanceBefore.add(amount);
+
+        } else {
+            throw new RuntimeException("不支持的账户操作类型: " + typeEnum);
         }
 
-        account.setUpdatedAt(new Date());
-        boolean success = this.updateById(account);
-
-        if (success) {
-            Transaction transaction = new Transaction();
-            transaction.setUserId(adjustDTO.getUserId());
-            transaction.setTransactionNo(IdUtil.getSnowflakeNextIdStr());
-            transaction.setType(adjustDTO.getType());
-            transaction.setAmount(amount);
-            transaction.setBalanceBefore(balanceBefore);
-            transaction.setBalanceAfter(account.getBalance());
-            transaction.setStatus(2);
-            transaction.setRemark(adjustDTO.getRemark());
-            transaction.setCreatedAt(new Date());
-            transaction.setUpdatedAt(new Date());
-            transaction.setOrderId(adjustDTO.getOrderId());
-            Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            if (principal instanceof LoginUser) {
-                transaction.setOperatorId(((LoginUser) principal).getUserId());
-            }
-            transactionMapper.insert(transaction);
+        // 插入交易流水记录
+        Transaction transaction = new Transaction();
+        transaction.setUserId(adjustDTO.getUserId());
+        transaction.setTransactionNo(IdUtil.getSnowflakeNextIdStr());
+        transaction.setType(typeEnum.getCode());
+        transaction.setAmount(amount);
+        transaction.setBalanceBefore(balanceBefore);
+        transaction.setBalanceAfter(balanceAfter);
+        transaction.setFrozenBefore(frozenBefore);
+        transaction.setFrozenAfter(frozenAfter);
+        transaction.setIdempotencyKey(adjustDTO.getIdempotencyKey());
+        transaction.setStatus(2);
+        transaction.setRemark(adjustDTO.getRemark());
+        transaction.setCreatedAt(new Date());
+        transaction.setUpdatedAt(new Date());
+        transaction.setOrderId(adjustDTO.getOrderId());
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof LoginUser) {
+            transaction.setOperatorId(((LoginUser) principal).getUserId());
         }
+        transactionMapper.insert(transaction);
 
-        return success;
+        return true;
     }
 
     @Override

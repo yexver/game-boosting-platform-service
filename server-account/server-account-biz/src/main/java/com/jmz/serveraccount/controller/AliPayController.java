@@ -8,6 +8,7 @@ import com.alipay.api.request.AlipayTradePagePayRequest;
 import com.jmz.jmzcommoncore.responseResult.R;
 import com.jmz.serveraccount.config.AliPayConfig;
 import com.jmz.serveraccount.dto.AccountAdjustDTO;
+import com.jmz.serveraccount.enums.AccountTypeEnum;
 import com.jmz.serveraccount.service.UserAccountService;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
@@ -69,7 +70,7 @@ public class AliPayController {
             AccountAdjustDTO dto = new AccountAdjustDTO();
             dto.setUserId(userId);
             dto.setAmount(amount);
-            dto.setType(1);
+            dto.setType(AccountTypeEnum.RECHARGE);
             dto.setRemark("用户自主充值");
             userAccountService.adjustAccountBalance(dto);
         }
@@ -94,7 +95,7 @@ public class AliPayController {
         AccountAdjustDTO dto = new AccountAdjustDTO();
         dto.setUserId(userId);
         dto.setAmount(amount);
-        dto.setType(2);
+        dto.setType(AccountTypeEnum.WITHDRAW);
         dto.setRemark("用户提现");
         boolean success = userAccountService.adjustAccountBalance(dto);
         return success ? R.success("提现成功") : R.error("提现失败");

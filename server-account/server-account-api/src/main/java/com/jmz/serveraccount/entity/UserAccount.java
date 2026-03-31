@@ -22,6 +22,8 @@ public class UserAccount {
     private BigDecimal frozenAmount;
     private BigDecimal totalIncome;
     private BigDecimal totalExpense;
+    private Long version = 0L;
+    private String lastIdempotencyKey;
     private Date createdAt;
     private Date updatedAt;
 }

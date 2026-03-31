@@ -67,6 +67,16 @@ spring:
           filters:
             - RewritePath=/server-account/?(?<segment>.*), /$\{segment}
 
+        - id: server-ai
+          uri: lb://server-ai
+          predicates:
+            - name: Path
+              args:
+                pattern: /server-ai/**
+                match-trailing-slash: true
+          filters:
+            - RewritePath=/server-ai/?(?<segment>.*), /$\{segment}
+
         # WebSocket 路由（直接透传，不重写路径，因为后端端点也是 /ws）
         # 双跳 + 网关默认不向转发端带 sec-websocket* 头 → 浏览器若协商 deflate 而后端无扩展会 1002；显式去掉扩展头 + Nacos 同配置见 jmz-gateway-dev.yml
         - id: server-order-websocket

@@ -15,6 +15,7 @@ spring:
       server-addr: ${jmz.game-boosting.nacos.server.url}:${jmz.game-boosting.nacos.server.port}
       config:
         namespace: ${NACOS_NAMESPACE:dev}
+        group: DEFAULT_GROUP
     openfeign:
       client:
         config:

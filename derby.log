@@ -1,0 +1,13 @@
+----------------------------------------------------------------
+Tue Mar 31 09:28:25 CST 2026:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.14.2.0 - (1828579): instance a816c00e-019d-4181-6b33-0000028bf8e0 
+on database directory memory:D:\2026毕设项目\项目\game-boosting-platform-service\822ffa79-dc44-4162-90ea-69efa45f144a with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@78308db1 
+Loaded from file:/D:/apache-maven-3.9.6/maven_base/org/apache/derby/derby/10.14.2.0/derby-10.14.2.0.jar
+java.vendor=Oracle Corporation
+java.runtime.version=19.0.2+7-44
+user.dir=D:\2026毕设项目\项目\game-boosting-platform-service
+os.name=Windows 11
+os.arch=amd64
+os.version=10.0
+derby.system.home=null
+Database Class Loader started - derby.database.classpath=''

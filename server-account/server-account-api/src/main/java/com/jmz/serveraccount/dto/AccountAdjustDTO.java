@@ -1,5 +1,6 @@
 package com.jmz.serveraccount.dto;
 
+import com.jmz.serveraccount.enums.AccountTypeEnum;
 import lombok.Data;
 
 import jakarta.validation.constraints.NotNull;
@@ -16,9 +17,11 @@ public class AccountAdjustDTO {
     private BigDecimal amount;
 
     @NotNull(message = "调整类型不能为空")
-    private Integer type;
+    private AccountTypeEnum type;
 
     private String remark;
 
     private Long orderId;
+
+    private String idempotencyKey;
 }
