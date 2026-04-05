@@ -22,6 +22,7 @@ public class Menu {
     private String redirect;
     private Integer orderNum;
     private String permission;
+    private Integer hidden;
 
     // 子菜单列表 - 不存在于数据库表中
     @TableField(exist = false)

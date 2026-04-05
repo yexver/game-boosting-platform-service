@@ -15,4 +15,5 @@ public class CreateMenuDTO {
     @JsonProperty("order_num")
     private Integer orderNum;
     private String permission;
+    private Integer hidden;
 } 

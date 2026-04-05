@@ -43,6 +43,7 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
         menu.setIcon(createMenuDTO.getIcon());
         menu.setOrderNum(createMenuDTO.getOrderNum());
         menu.setPermission(createMenuDTO.getPermission());
+        menu.setHidden(createMenuDTO.getHidden());
         boolean saved = this.save(menu);
         return saved ? R.success("创建成功") : R.error("创建失败");
     }
@@ -61,6 +62,7 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
         menu.setIcon(updateMenuDTO.getIcon());
         menu.setOrderNum(updateMenuDTO.getOrderNum());
         menu.setPermission(updateMenuDTO.getPermission());
+        menu.setHidden(updateMenuDTO.getHidden());
         boolean updated = this.updateById(menu);
         return updated ? R.success("更新成功") : R.error("更新失败");
     }
@@ -91,6 +93,7 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
                 map.put("icon", m.getIcon());
                 map.put("order_num", m.getOrderNum());
                 map.put("permission", m.getPermission());
+                map.put("hidden", m.getHidden());
                 return map;
             })
             .collect(Collectors.toList());
