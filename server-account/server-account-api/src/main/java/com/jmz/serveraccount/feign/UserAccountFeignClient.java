@@ -1,6 +1,7 @@
 package com.jmz.serveraccount.feign;
 
 import com.jmz.jmzcommoncore.responseResult.R;
+import com.jmz.serveraccount.feign.fallback.UserAccountFeignClientFallback;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,7 +12,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.jmz.serveraccount.dto.AccountAdjustDTO;
 
-@FeignClient(name = "server-account", path = "/account", contextId = "userAccountFeignClient")
+@FeignClient(name = "server-account", path = "/account", contextId = "userAccountFeignClient",
+        fallback = UserAccountFeignClientFallback.class)
 public interface UserAccountFeignClient {
 
     @PostMapping("/adjust")

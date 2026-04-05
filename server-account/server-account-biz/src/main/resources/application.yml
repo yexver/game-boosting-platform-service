@@ -28,6 +28,20 @@ spring:
           enabled: true
         response:
           enabled: true
+  hystrix:
+    command:
+      default:
+        execution:
+          isolation:
+            thread:
+              timeoutInMilliseconds: 30000
+        fallback:
+          enabled: true
+    circuitbreaker:
+      enabled: true
+      requestVolumeThreshold: 10
+      sleepWindowInMilliseconds: 5000
+      errorThresholdPercentage: 50
   datasource:
     url: jdbc:mysql://localhost:3306/game-boosting-platform-jmz-service?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
     username: root

@@ -41,4 +41,9 @@ public interface UserAccountService extends IService<UserAccount> {
      * 根据用户ID查询交易流水
      */
     List<TransactionVO> getTransactionsByUserId(Long userId);
+
+    /**
+     * 根据用户ID分页查询交易流水
+     */
+    IPage<TransactionVO> getTransactionsByUserIdPaged(Long userId, Integer current, Integer size);
 }

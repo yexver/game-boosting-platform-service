@@ -1,6 +1,7 @@
 package com.jmz.serveraccount.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.jmz.jmzcommoncore.responseResult.R;
 import com.jmz.serveraccount.dto.AccountAdjustDTO;
 import com.jmz.serveraccount.dto.AccountQueryDTO;
@@ -82,5 +83,14 @@ public class UserAccountController {
     public R getTransactionsByUserId(@PathVariable("userId") Long userId) {
         List<TransactionVO> transactions = userAccountService.getTransactionsByUserId(userId);
         return R.success("查询成功", transactions);
+    }
+
+    @GetMapping("/{userId}/transactions/paged")
+    public R getTransactionsByUserIdPaged(
+            @PathVariable("userId") Long userId,
+            @RequestParam(defaultValue = "1") Integer current,
+            @RequestParam(defaultValue = "10") Integer size) {
+        IPage<TransactionVO> page = userAccountService.getTransactionsByUserIdPaged(userId, current, size);
+        return R.success("查询成功", page);
     }
 }

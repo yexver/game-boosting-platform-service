@@ -23,9 +23,15 @@ public class WebGlobalExceptionHandler {
         return new R(HttpStatus.NOT_FOUND, "请求路径不存在: " + path);
     }
 
+    @ExceptionHandler(AccountException.class)
+    public R handleAccountException(AccountException e) {
+        log.warn("账户业务异常: {} - {}", e.getCode(), e.getMessage());
+        return new R(HttpStatus.BAD_REQUEST, e.getMessage());
+    }
+
     @ExceptionHandler(value = Exception.class)
     public R handleException(Exception e) {
-        log.error("异常原因是:", e);
-        return new R(HttpStatus.ERROR, e.getMessage());
+        log.error("系统异常: {}", e.getMessage(), e);
+        return new R(HttpStatus.ERROR, "系统繁忙，请稍后重试");
     }
 }

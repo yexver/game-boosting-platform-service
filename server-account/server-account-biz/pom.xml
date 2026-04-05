@@ -86,6 +86,13 @@
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>2.3.0</version>
         </dependency>
+
+        <!-- Redis缓存 -->
+        <dependency>
+            <groupId>com.jmz</groupId>
+            <artifactId>jmz-common-redis</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
 </project>

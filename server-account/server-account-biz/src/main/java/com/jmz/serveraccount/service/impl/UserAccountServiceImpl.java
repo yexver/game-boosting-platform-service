@@ -19,6 +19,8 @@ import com.jmz.serveraccount.vo.AccountVO;
 import com.jmz.serveraccount.vo.TransactionVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.apache.seata.spring.annotation.GlobalTransactional;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -42,6 +44,7 @@ public class UserAccountServiceImpl extends ServiceImpl<UserAccountMapper, UserA
     private UserFeignClient userFeignClient;
 
     @Override
+    @CacheEvict(value = "account", key = "'user:' + #userId")
     public boolean createAccountForUser(Long userId) {
         LambdaQueryWrapper<UserAccount> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(UserAccount::getUserId, userId);
@@ -63,6 +66,7 @@ public class UserAccountServiceImpl extends ServiceImpl<UserAccountMapper, UserA
     }
 
     @Override
+    @Cacheable(value = "account", key = "'user:' + #userId")
     public UserAccount getAccountByUserId(Long userId) {
         LambdaQueryWrapper<UserAccount> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(UserAccount::getUserId, userId);
@@ -103,10 +107,16 @@ public class UserAccountServiceImpl extends ServiceImpl<UserAccountMapper, UserA
 
     @Override
     @GlobalTransactional(rollbackFor = Exception.class)
+    @CacheEvict(value = "account", key = "'user:' + #adjustDTO.userId")
     public boolean adjustAccountBalance(AccountAdjustDTO adjustDTO) {
         UserAccount account = getAccountByUserId(adjustDTO.getUserId());
         if (account == null) {
             return false;
+        }
+
+        AccountTypeEnum typeEnum = adjustDTO.getType();
+        if (typeEnum == null) {
+            throw new RuntimeException("调整类型不能为空");
         }
 
         BigDecimal balanceBefore = account.getBalance();
@@ -114,77 +124,139 @@ public class UserAccountServiceImpl extends ServiceImpl<UserAccountMapper, UserA
         BigDecimal amount = adjustDTO.getAmount();
         Long currentVersion = account.getVersion();
 
-        AccountTypeEnum typeEnum = adjustDTO.getType();
-        if (typeEnum == null) {
-            throw new RuntimeException("调整类型不能为空");
-        }
-
-        // 记录操作后的余额快照（各操作类型不同）
         BigDecimal balanceAfter = balanceBefore;
         BigDecimal frozenAfter = frozenBefore;
 
-        // 根据操作类型分发到对应的原子方法
+        boolean success = executeBalanceOperation(adjustDTO, typeEnum, currentVersion);
+        if (!success) {
+            return false;
+        }
+
+        updateBalanceSnapshots(typeEnum, adjustDTO, balanceBefore, frozenBefore, balanceAfter, frozenAfter);
+
+        // 插入交易流水记录
+        insertTransactionRecord(adjustDTO, balanceBefore, frozenBefore, balanceAfter, frozenAfter);
+
+        return true;
+    }
+
+    /**
+     * 执行余额操作的核心逻辑
+     */
+    private boolean executeBalanceOperation(AccountAdjustDTO adjustDTO, AccountTypeEnum typeEnum, Long currentVersion) {
         if (typeEnum.isDeduct()) {
-            // 扣减类：余额+冻结 >= 扣减金额，防止超扣
-            int rows = this.baseMapper.deductBalanceWithLock(
-                    adjustDTO.getUserId(), amount, currentVersion, adjustDTO.getIdempotencyKey());
-            if (rows == 0) {
-                throw new RuntimeException("余额不足或并发冲突，请稍后重试");
-            }
-            balanceAfter = balanceBefore.subtract(amount);
-
+            return deductBalanceWithLock(adjustDTO, currentVersion);
         } else if (typeEnum.isFreeze()) {
-            // 冻结类：余额足够才冻结
-            int rows = this.baseMapper.freezeBalanceWithLock(
-                    adjustDTO.getUserId(), amount, currentVersion);
-            if (rows == 0) {
-                throw new RuntimeException("余额不足，无法冻结资金");
-            }
-            balanceAfter = balanceBefore.subtract(amount);
-            frozenAfter = frozenBefore.add(amount);
-
+            return freezeBalanceWithLock(adjustDTO, currentVersion);
         } else if (typeEnum == AccountTypeEnum.UNFREEZE) {
-            // 解冻类：冻结足够才解冻，同时校验余额不超限（双重校验）
-            if (balanceBefore.compareTo(amount) < 0) {
-                throw new RuntimeException("余额不足，无法解冻");
-            }
-            int rows = this.baseMapper.unfreezeBalanceWithLock(
-                    adjustDTO.getUserId(), amount, currentVersion);
-            if (rows == 0) {
-                throw new RuntimeException("冻结金额不足，无法解冻");
-            }
-            balanceAfter = balanceBefore.add(amount);
-            frozenAfter = frozenBefore.subtract(amount);
-
+            return unfreezeBalanceWithLock(adjustDTO, currentVersion);
         } else if (typeEnum == AccountTypeEnum.FROZEN_DEDUCT) {
-            // 冻结扣除
-            int rows = this.baseMapper.deductFrozenWithLock(
-                    adjustDTO.getUserId(), amount, currentVersion);
-            if (rows == 0) {
-                throw new RuntimeException("冻结金额不足，无法扣除");
-            }
-            frozenAfter = frozenBefore.subtract(amount);
-
+            return deductFrozenWithLock(adjustDTO, currentVersion);
         } else if (typeEnum.isAdd()) {
-            // 加款类：直接更新（加款无超扣风险）
-            account.setBalance(balanceBefore.add(amount));
-            account.setTotalIncome(account.getTotalIncome().add(amount));
-            account.setUpdatedAt(new Date());
-            if (!this.updateById(account)) {
-                throw new RuntimeException("并发冲突，请稍后重试");
-            }
-            balanceAfter = balanceBefore.add(amount);
-
+            return addBalance(adjustDTO);
         } else {
             throw new RuntimeException("不支持的账户操作类型: " + typeEnum);
         }
+    }
 
-        // 插入交易流水记录
+    /**
+     * 余额扣减（防止超扣）
+     */
+    private boolean deductBalanceWithLock(AccountAdjustDTO adjustDTO, Long currentVersion) {
+        int rows = this.baseMapper.deductBalanceWithLock(
+                adjustDTO.getUserId(), adjustDTO.getAmount(), currentVersion, adjustDTO.getIdempotencyKey());
+        if (rows == 0) {
+            throw new RuntimeException("余额不足或并发冲突，请稍后重试");
+        }
+        return true;
+    }
+
+    /**
+     * 冻结资金
+     */
+    private boolean freezeBalanceWithLock(AccountAdjustDTO adjustDTO, Long currentVersion) {
+        int rows = this.baseMapper.freezeBalanceWithLock(
+                adjustDTO.getUserId(), adjustDTO.getAmount(), currentVersion);
+        if (rows == 0) {
+            throw new RuntimeException("余额不足，无法冻结资金");
+        }
+        return true;
+    }
+
+    /**
+     * 解冻资金（双重校验余额）
+     */
+    private boolean unfreezeBalanceWithLock(AccountAdjustDTO adjustDTO, Long currentVersion) {
+        UserAccount account = getAccountByUserId(adjustDTO.getUserId());
+        if (account.getBalance().compareTo(adjustDTO.getAmount()) < 0) {
+            throw new RuntimeException("余额不足，无法解冻");
+        }
+        int rows = this.baseMapper.unfreezeBalanceWithLock(
+                adjustDTO.getUserId(), adjustDTO.getAmount(), currentVersion);
+        if (rows == 0) {
+            throw new RuntimeException("冻结金额不足，无法解冻");
+        }
+        return true;
+    }
+
+    /**
+     * 扣除冻结金额
+     */
+    private boolean deductFrozenWithLock(AccountAdjustDTO adjustDTO, Long currentVersion) {
+        int rows = this.baseMapper.deductFrozenWithLock(
+                adjustDTO.getUserId(), adjustDTO.getAmount(), currentVersion);
+        if (rows == 0) {
+            throw new RuntimeException("冻结金额不足，无法扣除");
+        }
+        return true;
+    }
+
+    /**
+     * 增加余额
+     */
+    private boolean addBalance(AccountAdjustDTO adjustDTO) {
+        UserAccount account = getAccountByUserId(adjustDTO.getUserId());
+        account.setBalance(account.getBalance().add(adjustDTO.getAmount()));
+        account.setTotalIncome(account.getTotalIncome().add(adjustDTO.getAmount()));
+        account.setUpdatedAt(new Date());
+        if (!this.updateById(account)) {
+            throw new RuntimeException("并发冲突，请稍后重试");
+        }
+        return true;
+    }
+
+    /**
+     * 计算余额快照
+     */
+    private void updateBalanceSnapshots(AccountTypeEnum typeEnum, AccountAdjustDTO adjustDTO,
+                                         BigDecimal balanceBefore, BigDecimal frozenBefore,
+                                         BigDecimal balanceAfter, BigDecimal frozenAfter) {
+        if (typeEnum.isDeduct()) {
+            balanceAfter = balanceBefore.subtract(adjustDTO.getAmount());
+        } else if (typeEnum.isFreeze()) {
+            balanceAfter = balanceBefore.subtract(adjustDTO.getAmount());
+            frozenAfter = frozenBefore.add(adjustDTO.getAmount());
+        } else if (typeEnum == AccountTypeEnum.UNFREEZE) {
+            balanceAfter = balanceBefore.add(adjustDTO.getAmount());
+            frozenAfter = frozenBefore.subtract(adjustDTO.getAmount());
+        } else if (typeEnum == AccountTypeEnum.FROZEN_DEDUCT) {
+            frozenAfter = frozenBefore.subtract(adjustDTO.getAmount());
+        } else if (typeEnum.isAdd()) {
+            balanceAfter = balanceBefore.add(adjustDTO.getAmount());
+        }
+    }
+
+    /**
+     * 插入交易流水记录
+     */
+    private void insertTransactionRecord(AccountAdjustDTO adjustDTO,
+                                         BigDecimal balanceBefore, BigDecimal frozenBefore,
+                                         BigDecimal balanceAfter, BigDecimal frozenAfter) {
         Transaction transaction = new Transaction();
         transaction.setUserId(adjustDTO.getUserId());
         transaction.setTransactionNo(IdUtil.getSnowflakeNextIdStr());
-        transaction.setType(typeEnum.getCode());
-        transaction.setAmount(amount);
+        transaction.setType(adjustDTO.getType().getCode());
+        transaction.setAmount(adjustDTO.getAmount());
         transaction.setBalanceBefore(balanceBefore);
         transaction.setBalanceAfter(balanceAfter);
         transaction.setFrozenBefore(frozenBefore);
@@ -195,13 +267,13 @@ public class UserAccountServiceImpl extends ServiceImpl<UserAccountMapper, UserA
         transaction.setCreatedAt(new Date());
         transaction.setUpdatedAt(new Date());
         transaction.setOrderId(adjustDTO.getOrderId());
+
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (principal instanceof LoginUser) {
             transaction.setOperatorId(((LoginUser) principal).getUserId());
         }
-        transactionMapper.insert(transaction);
 
-        return true;
+        transactionMapper.insert(transaction);
     }
 
     @Override
@@ -217,5 +289,21 @@ public class UserAccountServiceImpl extends ServiceImpl<UserAccountMapper, UserA
             BeanUtils.copyProperties(transaction, vo);
             return vo;
         }).collect(Collectors.toList());
+    }
+
+    @Override
+    public IPage<TransactionVO> getTransactionsByUserIdPaged(Long userId, Integer current, Integer size) {
+        Page<Transaction> page = new Page<>(current, size);
+        LambdaQueryWrapper<Transaction> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Transaction::getUserId, userId);
+        wrapper.orderByDesc(Transaction::getCreatedAt);
+
+        Page<Transaction> transactionPage = transactionMapper.selectPage(page, wrapper);
+
+        return transactionPage.convert(transaction -> {
+            TransactionVO vo = new TransactionVO();
+            BeanUtils.copyProperties(transaction, vo);
+            return vo;
+        });
     }
 }
