@@ -37,7 +37,16 @@ public class OrderSimpleDetailVO {
     private SimpleUserVO publisher;
     // 接单人信息
     private SimpleUserVO taker;
-    
+    // 介入客服信息
+    private SimpleUserVO manager;
+
+    // 管理员备注
+    private String remark;
+    // 付款状态（0-未付款，1-已付款）
+    private Integer paid;
+    // 平台服务费
+    private BigDecimal platformFee;
+
     // 订单状态日志
     private List<OrderStatusLogVO> statusLogs;
 
@@ -46,5 +55,7 @@ public class OrderSimpleDetailVO {
         private Long userId;
         private String username;
         private String avatar;
+        private String phone;
+        private String email;
     }
 } 

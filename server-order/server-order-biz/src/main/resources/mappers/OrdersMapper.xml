@@ -20,6 +20,10 @@
             o.status,
             o.created_at,
             o.updated_at,
+            o.start_at,
+            o.actual_at,
+            o.remark,
+            o.paid,
             u.username AS publisherUsername,
             u.avatar AS publisherAvatar,
             t.username AS takerUsername,
@@ -69,8 +73,20 @@
             <if test="query.publisherId != null">
                 AND o.publisher_id = #{query.publisherId}
             </if>
-            <if test="query.takerId != null">
-                AND o.taker_id = #{query.takerId}
+            <if test="query.orderNo != null and query.orderNo != ''">
+                AND o.order_no = #{query.orderNo}
+            </if>
+            <if test="query.minAmount != null and query.minAmount != ''">
+                AND o.price &gt;= #{query.minAmount}
+            </if>
+            <if test="query.maxAmount != null and query.maxAmount != ''">
+                AND o.price &lt;= #{query.maxAmount}
+            </if>
+            <if test="query.beginCreateTime != null and query.beginCreateTime != ''">
+                AND o.created_at &gt;= CONCAT(#{query.beginCreateTime}, ' 00:00:00')
+            </if>
+            <if test="query.endCreateTime != null and query.endCreateTime != ''">
+                AND o.created_at &lt;= CONCAT(#{query.endCreateTime}, ' 23:59:59')
             </if>
         </where>
         <choose>
@@ -140,6 +156,21 @@
             </if>
             <if test="query.takerId != null">
                 AND o.taker_id = #{query.takerId}
+            </if>
+            <if test="query.orderNo != null and query.orderNo != ''">
+                AND o.order_no = #{query.orderNo}
+            </if>
+            <if test="query.minAmount != null and query.minAmount != ''">
+                AND o.price &gt;= #{query.minAmount}
+            </if>
+            <if test="query.maxAmount != null and query.maxAmount != ''">
+                AND o.price &lt;= #{query.maxAmount}
+            </if>
+            <if test="query.beginCreateTime != null and query.beginCreateTime != ''">
+                AND o.created_at &gt;= CONCAT(#{query.beginCreateTime}, ' 00:00:00')
+            </if>
+            <if test="query.endCreateTime != null and query.endCreateTime != ''">
+                AND o.created_at &lt;= CONCAT(#{query.endCreateTime}, ' 23:59:59')
             </if>
         </where>
     </select>

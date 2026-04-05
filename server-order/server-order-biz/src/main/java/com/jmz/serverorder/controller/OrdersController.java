@@ -13,12 +13,14 @@ import com.jmz.serverorder.mapper.OrderStatusLogsMapper;
 import com.jmz.serverorder.entity.Orders;
 import com.jmz.serverorder.mapper.OrdersMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.stream.Collectors;
 import com.jmz.jmzfile.feign.RemoteFileService;
 import com.jmz.jmzcommoncore.responseResult.R;
 import java.util.Map;
+import java.util.List;
 
 @RestController
 @RequestMapping("/orders")
@@ -227,5 +229,62 @@ public class OrdersController {
             return R.error("orderId不能为空");
         }
         return ordersService.arbitrateOrder(orderId, payAmount, depositAmount, remark);
+    }
+
+    /**
+     * 获取订单统计信息
+     */
+    @GetMapping("/statistics")
+    public R getOrderStatistics(OrdersQueryDTO queryDTO) {
+        return R.success(ordersService.getOrderStatistics(queryDTO));
+    }
+
+    /**
+     * 批量删除订单
+     */
+    @PostMapping("/batch-delete")
+    public R batchDeleteOrders(@RequestBody Map<String, Object> body) {
+        Object idsObj = body.get("ids");
+        if (idsObj == null) {
+            return R.error("ids不能为空");
+        }
+        List<Long> ids;
+        if (idsObj instanceof List) {
+            @SuppressWarnings("unchecked")
+            List<Long> list = (List<Long>) idsObj;
+            ids = list;
+        } else {
+            return R.error("ids格式错误");
+        }
+        return ordersService.batchDeleteOrders(ids);
+    }
+
+    /**
+     * 修改订单备注
+     */
+    @PutMapping("/remark")
+    public R updateOrderRemark(@RequestBody Map<String, Object> body) {
+        Long orderId = null;
+        String remark = null;
+        if (body.get("orderId") instanceof Number) {
+            orderId = ((Number) body.get("orderId")).longValue();
+        } else if (body.get("orderId") instanceof String) {
+            orderId = Long.valueOf((String) body.get("orderId"));
+        }
+        if (body.get("remark") != null) {
+            remark = body.get("remark").toString();
+        }
+        if (orderId == null) {
+            return R.error("orderId不能为空");
+        }
+        return ordersService.updateOrderRemark(orderId, remark);
+    }
+
+    /**
+     * 导出订单列表（Excel）
+     */
+    @GetMapping("/export")
+    public void exportOrders(OrdersQueryDTO queryDTO, HttpServletResponse response) {
+        ordersService.exportOrders(queryDTO, response);
     }
 } 

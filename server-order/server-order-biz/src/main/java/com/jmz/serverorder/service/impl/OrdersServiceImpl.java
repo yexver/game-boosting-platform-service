@@ -9,6 +9,7 @@ import com.jmz.serverorder.service.OrdersService;
 import com.jmz.serverorder.vo.OrderSimpleDetailVO;
 import com.jmz.serveraccount.dto.AccountAdjustDTO;
 import com.jmz.serveruser.feign.UserFeignClient;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.seata.spring.annotation.GlobalTransactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -387,7 +388,9 @@ public class OrdersServiceImpl implements OrdersService {
         // 3. 获取接单人ID（单独查订单表）
         Orders order = ordersMapper.selectById(orderId);
         Long takerId = order.getTakerId();
+        Long managerId = order.getManagerId();
         User takerUser = takerId != null ? userMapper.selectById(takerId) : null;
+        User managerUser = managerId != null ? userMapper.selectById(managerId) : null;
 
         // 4. 组装VO
         OrderSimpleDetailVO vo = new OrderSimpleDetailVO();
@@ -413,6 +416,10 @@ public class OrdersServiceImpl implements OrdersService {
         vo.setGameName(orderDetail.getGameName());
         vo.setSystemName(orderDetail.getSystemName());
         vo.setServerName(orderDetail.getServerName());
+        // 新增字段
+        vo.setRemark(order.getRemark());
+        vo.setPaid(order.getPaid());
+        vo.setPlatformFee(order.getPlatformFee());
 
         // 5. 设置发单人信息
         if (publisherUser != null) {
@@ -420,6 +427,8 @@ public class OrdersServiceImpl implements OrdersService {
             publisher.setUserId(publisherUser.getUserId());
             publisher.setUsername(publisherUser.getUsername());
             publisher.setAvatar(publisherUser.getAvatar());
+            publisher.setPhone(publisherUser.getPhone());
+            publisher.setEmail(publisherUser.getEmail());
             vo.setPublisher(publisher);
         }
 
@@ -429,15 +438,28 @@ public class OrdersServiceImpl implements OrdersService {
             taker.setUserId(takerUser.getUserId());
             taker.setUsername(takerUser.getUsername());
             taker.setAvatar(takerUser.getAvatar());
+            taker.setPhone(takerUser.getPhone());
+            taker.setEmail(takerUser.getEmail());
             vo.setTaker(taker);
         }
 
-        // 7. 查询订单状态日志
+        // 7. 设置介入客服信息
+        if (managerUser != null) {
+            OrderSimpleDetailVO.SimpleUserVO manager = new OrderSimpleDetailVO.SimpleUserVO();
+            manager.setUserId(managerUser.getUserId());
+            manager.setUsername(managerUser.getUsername());
+            manager.setAvatar(managerUser.getAvatar());
+            manager.setPhone(managerUser.getPhone());
+            manager.setEmail(managerUser.getEmail());
+            vo.setManager(manager);
+        }
+
+        // 8. 查询订单状态日志
         LambdaQueryWrapper<OrderStatusLogs> logWrapper = new LambdaQueryWrapper<>();
         logWrapper.eq(OrderStatusLogs::getOrderId, orderId)
                  .orderByDesc(OrderStatusLogs::getCreatedAt);
         List<OrderStatusLogs> statusLogs = orderStatusLogsMapper.selectList(logWrapper);
-        
+
         List<OrderStatusLogVO> statusLogVOs = statusLogs.stream().map(log -> {
             OrderStatusLogVO logVO = new OrderStatusLogVO();
             logVO.setId(log.getId());
@@ -451,7 +473,7 @@ public class OrdersServiceImpl implements OrdersService {
             logVO.setCreatedAt(log.getCreatedAt());
             logVO.setPrice(log.getPrice());
             logVO.setDeposit(log.getDeposit());
-            
+
             // 设置操作者信息
             if (log.getOperatorId() != null) {
                 User operatorUser = userMapper.selectById(log.getOperatorId());
@@ -460,10 +482,10 @@ public class OrdersServiceImpl implements OrdersService {
                     logVO.setOperatorAvatar(operatorUser.getAvatar());
                 }
             }
-            
+
             return logVO;
         }).collect(Collectors.toList());
-        
+
         vo.setStatusLogs(statusLogVOs);
 
         return vo;
@@ -1287,6 +1309,147 @@ public class OrdersServiceImpl implements OrdersService {
     @Override
     public List<OrderStatusPieVO> getOrderStatusPie(Integer days) {
         return ordersMapper.getOrderStatusPie(days);
+    }
+
+    @Override
+    public Map<String, Object> getOrderStatistics(OrdersQueryDTO queryDTO) {
+        // 统计各状态订单数量
+        LambdaQueryWrapper<Orders> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(queryDTO.getStatus() != null, Orders::getStatus, queryDTO.getStatus());
+        wrapper.eq(queryDTO.getGameId() != null, Orders::getGameId, queryDTO.getGameId());
+
+        long totalOrders = ordersMapper.selectCount(wrapper);
+
+        // 统计已完成订单数
+        LambdaQueryWrapper<Orders> completedWrapper = new LambdaQueryWrapper<>();
+        completedWrapper.eq(queryDTO.getStatus() != null, Orders::getStatus, queryDTO.getStatus());
+        completedWrapper.eq(queryDTO.getGameId() != null, Orders::getGameId, queryDTO.getGameId());
+        completedWrapper.eq(Orders::getStatus, 5);
+        long completedOrders = ordersMapper.selectCount(completedWrapper);
+
+        // 统计总成交金额
+        List<Orders> allOrders = ordersMapper.selectList(wrapper);
+        java.math.BigDecimal totalAmount = allOrders.stream()
+                .filter(o -> o.getPrice() != null)
+                .map(Orders::getPrice)
+                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+
+        // 统计各状态数量
+        Map<Integer, Long> statusCount = allOrders.stream()
+                .collect(java.util.stream.Collectors.groupingBy(
+                        o -> o.getStatus() == null ? 0 : o.getStatus(),
+                        java.util.stream.Collectors.counting()
+                ));
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("totalOrders", totalOrders);
+        result.put("completedOrders", completedOrders);
+        result.put("totalAmount", totalAmount);
+        result.put("averageAmount", totalOrders > 0 ? totalAmount.divide(new java.math.BigDecimal(totalOrders), 2, java.math.RoundingMode.HALF_UP) : java.math.BigDecimal.ZERO);
+        result.put("statusDistribution", statusCount);
+        return result;
+    }
+
+    @Override
+    public R batchDeleteOrders(List<Long> orderIds) {
+        if (orderIds == null || orderIds.isEmpty()) {
+            return R.error("请选择要删除的订单");
+        }
+        for (Long orderId : orderIds) {
+            Orders order = ordersMapper.selectById(orderId);
+            if (order == null) {
+                return R.error("订单不存在: " + orderId);
+            }
+            // 只允许删除已撤销(6)或已仲裁(10)的订单
+            if (order.getStatus() != 6 && order.getStatus() != 10) {
+                return R.error("只能删除已撤销或已仲裁的订单，当前订单状态不允许删除: " + order.getOrderNo());
+            }
+        }
+        ordersMapper.deleteBatchIds(orderIds);
+        return R.success("删除成功，共删除 " + orderIds.size() + " 个订单");
+    }
+
+    @Override
+    public R updateOrderRemark(Long orderId, String remark) {
+        Orders order = ordersMapper.selectById(orderId);
+        if (order == null) {
+            return R.error("订单不存在");
+        }
+        order.setRemark(remark);
+        order.setUpdatedAt(new Date());
+        ordersMapper.updateById(order);
+        return R.success("备注更新成功");
+    }
+
+    @Override
+    public void exportOrders(OrdersQueryDTO queryDTO, HttpServletResponse response) {
+        try {
+            // 查询所有符合条件的订单（不分页）
+            List<OrdersListVO> list = ordersMapper.selectOrderInfoList(queryDTO, 0, 10000);
+
+            // 设置响应头
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setCharacterEncoding("utf-8");
+            String fileName = java.net.URLEncoder.encode("订单列表_" + new java.text.SimpleDateFormat("yyyyMMdd").format(new Date()), "UTF-8");
+            response.setHeader("Content-Disposition", "attachment;filename=" + fileName + ".xlsx");
+
+            // 使用 Apache POI 生成 Excel
+            org.apache.poi.ss.usermodel.Workbook workbook = new org.apache.poi.xssf.usermodel.XSSFWorkbook();
+            org.apache.poi.ss.usermodel.Sheet sheet = workbook.createSheet("订单列表");
+
+            // 表头
+            org.apache.poi.ss.usermodel.Row headerRow = sheet.createRow(0);
+            String[] headers = {"订单号", "标题", "游戏", "系统", "服务区", "发单用户", "接单用户", "金额", "状态", "下单时间", "开始时间", "完成时间"};
+            for (int i = 0; i < headers.length; i++) {
+                org.apache.poi.ss.usermodel.Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+            }
+
+            // 数据行
+            int rowNum = 1;
+            for (OrdersListVO vo : list) {
+                org.apache.poi.ss.usermodel.Row row = sheet.createRow(rowNum++);
+                row.createCell(0).setCellValue(vo.getOrderNo() != null ? vo.getOrderNo() : "");
+                row.createCell(1).setCellValue(vo.getTitle() != null ? vo.getTitle() : "");
+                row.createCell(2).setCellValue(vo.getGameName() != null ? vo.getGameName() : "");
+                row.createCell(3).setCellValue(vo.getSystemName() != null ? vo.getSystemName() : "");
+                row.createCell(4).setCellValue(vo.getServerName() != null ? vo.getServerName() : "");
+                row.createCell(5).setCellValue(vo.getPublisherUsername() != null ? vo.getPublisherUsername() : "");
+                row.createCell(6).setCellValue(vo.getTakerUsername() != null ? vo.getTakerUsername() : "");
+                row.createCell(7).setCellValue(vo.getPrice() != null ? vo.getPrice().doubleValue() : 0.0);
+                row.createCell(8).setCellValue(getStatusText(vo.getStatus()));
+                row.createCell(9).setCellValue(vo.getCreatedAt() != null ? vo.getCreatedAt().toString() : "");
+                row.createCell(10).setCellValue(vo.getStartAt() != null ? vo.getStartAt().toString() : "");
+                row.createCell(11).setCellValue(vo.getActualAt() != null ? vo.getActualAt().toString() : "");
+            }
+
+            // 自动调整列宽
+            for (int i = 0; i < headers.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            workbook.write(response.getOutputStream());
+            workbook.close();
+        } catch (Exception e) {
+            log.error("导出订单失败", e);
+            throw new RuntimeException("导出失败: " + e.getMessage());
+        }
+    }
+
+    private String getStatusText(Integer status) {
+        if (status == null) return "未知";
+        switch (status) {
+            case 1: return "未接手";
+            case 2: return "代练中";
+            case 3: return "待验收";
+            case 5: return "已完成";
+            case 6: return "已撤销";
+            case 7: return "撤销中";
+            case 8: return "待介入";
+            case 9: return "介入中";
+            case 10: return "已仲裁";
+            default: return "未知";
+        }
     }
 
 } 

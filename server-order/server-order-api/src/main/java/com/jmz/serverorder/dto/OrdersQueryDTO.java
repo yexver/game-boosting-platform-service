@@ -31,4 +31,9 @@ public class OrdersQueryDTO {
     private Long takerId; // 接单者ID
     private Integer page = 1;
     private Integer pageSize = 10;
+    private String beginCreateTime; // 下单开始时间（格式：yyyy-MM-dd）
+    private String endCreateTime;   // 下单结束时间（格式：yyyy-MM-dd）
+    private String orderNo;         // 订单号（精确查询）
+    private String minAmount;       // 最小金额
+    private String maxAmount;      // 最大金额
 } 

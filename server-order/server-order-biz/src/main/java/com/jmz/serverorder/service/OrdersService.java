@@ -10,6 +10,8 @@ import com.jmz.serverorder.vo.TakeOrderDetailVO;
 import com.jmz.serverorder.vo.GameOrderDistributionVO;
 import com.jmz.serverorder.vo.IncomeTrendVO;
 import com.jmz.serverorder.vo.OrderStatusPieVO;
+import jakarta.servlet.http.HttpServletResponse;
+
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -56,7 +58,7 @@ public interface OrdersService {
     /**
      * 进行验收
      */
-    R verifyAccept(Long orderId, BigDecimal  deposit, String remark, org.springframework.web.multipart.MultipartFile[] images) throws Exception;
+    R verifyAccept(Long orderId, BigDecimal deposit, String remark, org.springframework.web.multipart.MultipartFile[] images) throws Exception;
 
     /**
      * 发单者取消未接手的订单
@@ -101,4 +103,24 @@ public interface OrdersService {
      * 订单状态占比
      */
     List<OrderStatusPieVO> getOrderStatusPie(Integer days);
+
+    /**
+     * 获取订单统计信息
+     */
+    Map<String, Object> getOrderStatistics(OrdersQueryDTO queryDTO);
+
+    /**
+     * 批量删除订单
+     */
+    R batchDeleteOrders(List<Long> orderIds);
+
+    /**
+     * 修改订单备注
+     */
+    R updateOrderRemark(Long orderId, String remark);
+
+    /**
+     * 导出订单列表（Excel）
+     */
+    void exportOrders(OrdersQueryDTO queryDTO, HttpServletResponse response);
 } 

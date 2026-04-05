@@ -30,5 +30,9 @@ public class OrdersListVO {
     private Long takerId;
     private String takerUsername;
     private String takerAvatar;
+    private Date startAt;
+    private Date actualAt;
+    private String remark;
+    private Integer paid;
 }
 

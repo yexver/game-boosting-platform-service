@@ -29,9 +29,11 @@ public class Orders {
     private BigDecimal securityDeposit;
     private BigDecimal efficiencyDeposit;
     private Integer status; //订单状态：1-未接手，2-代练中，3-待验收，4-验收中，5-已完成，6-已撤销，8-撤销中，9-待介入，10-介入中，12-已仲裁，13-强制撤销
+    private Integer paid; // 付款状态：0-未付款，1-已付款
     private Integer timeLimit;
     private Date startAt;
     private Date actualAt;
     private Date createdAt;
     private Date updatedAt;
+    private String remark; // 管理员内部备注
 } 
