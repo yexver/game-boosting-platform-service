@@ -12,6 +12,7 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -226,7 +227,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
     }
 
     private void sendMessage(WebSocketSession session, String type, Object data) throws IOException {
-        Map<String, Object> message = new java.util.HashMap<>();
+        Map<String, Object> message = new HashMap<>();
         message.put("type", type);
         if (data instanceof String) {
             message.put("message", data);

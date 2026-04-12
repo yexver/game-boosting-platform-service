@@ -17,6 +17,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.util.Date;
 import cn.hutool.core.util.IdUtil;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -45,7 +53,7 @@ import com.jmz.serverorder.entity.OrderStatusLogs;
 import com.jmz.serverorder.vo.OrderStatusLogVO;
 import com.jmz.serverorder.mapper.OrderStatusLogsMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import java.util.List;
+
 import java.util.stream.Collectors;
 import com.jmz.jmzfile.feign.RemoteFileService;
 import com.jmz.jmzcommoncore.responseResult.R;
@@ -499,9 +507,9 @@ public class OrdersServiceImpl implements OrdersService {
             R uploadResult = remoteFileService.multiUpload(images);
             if (uploadResult.isSuccess() && uploadResult.get(R.DATA_TAG) != null) {
                 Object data = uploadResult.get(R.DATA_TAG);
-                if (data instanceof java.util.List) {
+                if (data instanceof List) {
                     @SuppressWarnings("unchecked")
-                    java.util.List<String> urlList = (java.util.List<String>) data;
+                    List<String> urlList = (List<String>) data;
                     imageUrls = String.join(",", urlList);
                 } else if (data instanceof String) {
                     imageUrls = data.toString();
@@ -529,14 +537,14 @@ public class OrdersServiceImpl implements OrdersService {
         log.setOperatorId(currentUserId);
         log.setRemark(remark);
         log.setImageUrls(imageUrls);
-        log.setCreatedAt(new java.util.Date());
+        log.setCreatedAt(new Date());
         log.setPrice(price);
         log.setDeposit(deposit);
         orderStatusLogsMapper.insert(log);
         // 3. 更新订单状态为7-撤销中
         if (order != null) {
             order.setStatus(7);
-            order.setUpdatedAt(new java.util.Date());
+            order.setUpdatedAt(new Date());
             ordersMapper.updateById(order);
         }
         // 4. 申请撤销后，给对方用户发消息
@@ -573,7 +581,7 @@ public class OrdersServiceImpl implements OrdersService {
         int fromStatus = order.getStatus();
         int toStatus = 2; // 默认恢复为2-代练中
         order.setStatus(toStatus);
-        order.setUpdatedAt(new java.util.Date());
+        order.setUpdatedAt(new Date());
         ordersMapper.updateById(order);
 
         // 插入状态日志
@@ -589,7 +597,7 @@ public class OrdersServiceImpl implements OrdersService {
             log.setOperatorType(2); // 接单者
         }
         log.setRemark("撤销申请已取消");
-        log.setCreatedAt(new java.util.Date());
+        log.setCreatedAt(new Date());
         orderStatusLogsMapper.insert(log);
 
         // 给对方用户发消息
@@ -622,9 +630,9 @@ public class OrdersServiceImpl implements OrdersService {
             R uploadResult = remoteFileService.multiUpload(images);
             if (uploadResult.isSuccess() && uploadResult.get(R.DATA_TAG) != null) {
                 Object data = uploadResult.get(R.DATA_TAG);
-                if (data instanceof java.util.List) {
+                if (data instanceof List) {
                     @SuppressWarnings("unchecked")
-                    java.util.List<String> urlList = (java.util.List<String>) data;
+                    List<String> urlList = (List<String>) data;
                     imageUrls = String.join(",", urlList);
                 } else if (data instanceof String) {
                     imageUrls = data.toString();
@@ -652,14 +660,14 @@ public class OrdersServiceImpl implements OrdersService {
         log.setOperatorId(currentUserId);
         log.setRemark(remark);
         log.setImageUrls(imageUrls);
-        log.setCreatedAt(new java.util.Date());
+        log.setCreatedAt(new Date());
         // 不再set price 和 deposit 字段
         orderStatusLogsMapper.insert(log);
         // 3. 更新订单状态为3-待验收
         if (order != null) {
             order.setStatus(3);
-            order.setUpdatedAt(new java.util.Date());
-            order.setActualAt(new java.util.Date());
+            order.setUpdatedAt(new Date());
+            order.setActualAt(new Date());
             ordersMapper.updateById(order);
         }
         // 4. 给对方用户发消息
@@ -693,9 +701,9 @@ public class OrdersServiceImpl implements OrdersService {
             R uploadResult = remoteFileService.multiUpload(images);
             if (uploadResult.isSuccess() && uploadResult.get(R.DATA_TAG) != null) {
                 Object data = uploadResult.get(R.DATA_TAG);
-                if (data instanceof java.util.List) {
+                if (data instanceof List) {
                     @SuppressWarnings("unchecked")
-                    java.util.List<String> urlList = (java.util.List<String>) data;
+                    List<String> urlList = (List<String>) data;
                     imageUrls = String.join(",", urlList);
                 } else if (data instanceof String) {
                     imageUrls = data.toString();
@@ -729,7 +737,7 @@ public class OrdersServiceImpl implements OrdersService {
         log.setOperatorId(currentUserId);
         log.setRemark(remark);
         log.setImageUrls(imageUrls);
-        log.setCreatedAt(new java.util.Date());
+        log.setCreatedAt(new Date());
         log.setPrice(order.getPrice());
         log.setDeposit(deposit);
         // 统一计费逻辑：平台服务费=订单金额*5%，封顶25元
@@ -800,8 +808,8 @@ public class OrdersServiceImpl implements OrdersService {
         // 3. 更新订单状态为5-已完成
         if (order != null) {
             order.setStatus(5);
-            order.setActualAt(new java.util.Date()); // 完成时间
-            order.setUpdatedAt(new java.util.Date());
+            order.setActualAt(new Date()); // 完成时间
+            order.setUpdatedAt(new Date());
             ordersMapper.updateById(order);
         }
         // 4. 给对方用户发消息
@@ -849,7 +857,7 @@ public class OrdersServiceImpl implements OrdersService {
         // 更新订单状态为6-已撤销
         int fromStatus = order.getStatus();
         order.setStatus(6); // 6-已撤销
-        order.setUpdatedAt(new java.util.Date());
+        order.setUpdatedAt(new Date());
         ordersMapper.updateById(order);
         // 插入状态日志
         OrderStatusLogs log = new OrderStatusLogs();
@@ -859,7 +867,7 @@ public class OrdersServiceImpl implements OrdersService {
         log.setOperatorId(currentUserId);
         log.setOperatorType(1); // 发单者
         log.setRemark("发单者主动撤销订单");
-        log.setCreatedAt(new java.util.Date());
+        log.setCreatedAt(new Date());
         // 解冻发单者资金（因为是未接手状态取消，全额返还）
         AccountAdjustDTO unfreezeDTO = new AccountAdjustDTO();
         unfreezeDTO.setUserId(order.getPublisherId());
@@ -895,7 +903,7 @@ public class OrdersServiceImpl implements OrdersService {
             return R.error("只有撤销中的订单才能同意撤销");
         }
         order.setStatus(6); // 6-已撤销
-        order.setUpdatedAt(new java.util.Date());
+        order.setUpdatedAt(new Date());
         ordersMapper.updateById(order);
         // 插入状态日志
         Long currentUserId = getCurrentUserId();
@@ -910,10 +918,10 @@ public class OrdersServiceImpl implements OrdersService {
             log.setOperatorType(2);
         }
         log.setRemark("同意撤销");
-        log.setCreatedAt(new java.util.Date());
+        log.setCreatedAt(new Date());
         // 查询上一条日志金额
         OrderStatusLogs lastLog = orderStatusLogsMapper.selectOne(
-            new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<OrderStatusLogs>()
+            new LambdaQueryWrapper<OrderStatusLogs>()
                 .eq(OrderStatusLogs::getOrderId, orderId)
                 .orderByDesc(OrderStatusLogs::getCreatedAt)
                 .last("LIMIT 1")
@@ -925,7 +933,7 @@ public class OrdersServiceImpl implements OrdersService {
         orderStatusLogsMapper.insert(log);
         // 查询申请撤销日志（fromStatus=2, toStatus=7）
         OrderStatusLogs applyLog = orderStatusLogsMapper.selectOne(
-            new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<OrderStatusLogs>()
+            new LambdaQueryWrapper<OrderStatusLogs>()
                 .eq(OrderStatusLogs::getOrderId, orderId)
                 .eq(OrderStatusLogs::getFromStatus, 2)
                 .eq(OrderStatusLogs::getToStatus, 7)
@@ -1027,7 +1035,7 @@ public class OrdersServiceImpl implements OrdersService {
             return R.error("只有撤销中的订单才能拒绝撤销");
         }
         order.setStatus(2); // 2-代练中
-        order.setUpdatedAt(new java.util.Date());
+        order.setUpdatedAt(new Date());
         ordersMapper.updateById(order);
         // 插入状态日志
         Long currentUserId = getCurrentUserId();
@@ -1042,7 +1050,7 @@ public class OrdersServiceImpl implements OrdersService {
             log.setOperatorType(2);
         }
         log.setRemark("拒绝撤销");
-        log.setCreatedAt(new java.util.Date());
+        log.setCreatedAt(new Date());
         orderStatusLogsMapper.insert(log);
         // 通知对方
         Long receiverId = null;
@@ -1079,7 +1087,7 @@ public class OrdersServiceImpl implements OrdersService {
         }
         order.setManagerId(currentUserId);
         order.setStatus(9); // 9-介入中
-        order.setUpdatedAt(new java.util.Date());
+        order.setUpdatedAt(new Date());
         ordersMapper.updateById(order);
         // 插入状态日志
 
@@ -1090,7 +1098,7 @@ public class OrdersServiceImpl implements OrdersService {
         log.setOperatorId(currentUserId);
         log.setOperatorType(3); // 3-平台客服/管理员
         log.setRemark("平台已正式介入订单");
-        log.setCreatedAt(new java.util.Date());
+        log.setCreatedAt(new Date());
         orderStatusLogsMapper.insert(log);
         // 通知发单者和接单者
         if (order.getPublisherId() != null) {
@@ -1128,9 +1136,9 @@ public class OrdersServiceImpl implements OrdersService {
             R uploadResult = remoteFileService.multiUpload(images);
             if (uploadResult.isSuccess() && uploadResult.get(R.DATA_TAG) != null) {
                 Object data = uploadResult.get(R.DATA_TAG);
-                if (data instanceof java.util.List) {
+                if (data instanceof List) {
                     @SuppressWarnings("unchecked")
-                    java.util.List<String> urlList = (java.util.List<String>) data;
+                    List<String> urlList = (List<String>) data;
                     imageUrls = String.join(",", urlList);
                 } else if (data instanceof String) {
                     imageUrls = data.toString();
@@ -1140,7 +1148,7 @@ public class OrdersServiceImpl implements OrdersService {
             }
         }
         order.setStatus(8); // 8-待介入
-        order.setUpdatedAt(new java.util.Date());
+        order.setUpdatedAt(new Date());
         ordersMapper.updateById(order);
 
         // 插入状态日志
@@ -1156,7 +1164,7 @@ public class OrdersServiceImpl implements OrdersService {
             log.setOperatorType(2);
         }
         log.setRemark(remark != null ? remark : "用户申请平台介入");
-        log.setCreatedAt(new java.util.Date());
+        log.setCreatedAt(new Date());
         log.setPrice(price);
         log.setDeposit(deposit);
         log.setImageUrls(imageUrls);
@@ -1197,7 +1205,7 @@ public class OrdersServiceImpl implements OrdersService {
             return R.error("只有介入中的订单才能仲裁");
         }
         order.setStatus(10); // 10-已仲裁
-        order.setUpdatedAt(new java.util.Date());
+        order.setUpdatedAt(new Date());
         ordersMapper.updateById(order);
         // 插入状态日志
         Long currentUserId = getCurrentUserId();
@@ -1208,7 +1216,7 @@ public class OrdersServiceImpl implements OrdersService {
         log.setOperatorId(currentUserId);
         log.setOperatorType(3); // 3-平台客服/管理员
         log.setRemark(remark != null ? remark : "平台仲裁处理");
-        log.setCreatedAt(new java.util.Date());
+        log.setCreatedAt(new Date());
         log.setPrice(payAmount);
         log.setDeposit(depositAmount);
         orderStatusLogsMapper.insert(log);
@@ -1329,23 +1337,23 @@ public class OrdersServiceImpl implements OrdersService {
 
         // 统计总成交金额
         List<Orders> allOrders = ordersMapper.selectList(wrapper);
-        java.math.BigDecimal totalAmount = allOrders.stream()
+        BigDecimal totalAmount = allOrders.stream()
                 .filter(o -> o.getPrice() != null)
                 .map(Orders::getPrice)
-                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         // 统计各状态数量
         Map<Integer, Long> statusCount = allOrders.stream()
-                .collect(java.util.stream.Collectors.groupingBy(
+                .collect(Collectors.groupingBy(
                         o -> o.getStatus() == null ? 0 : o.getStatus(),
-                        java.util.stream.Collectors.counting()
+                        Collectors.counting()
                 ));
 
         Map<String, Object> result = new HashMap<>();
         result.put("totalOrders", totalOrders);
         result.put("completedOrders", completedOrders);
         result.put("totalAmount", totalAmount);
-        result.put("averageAmount", totalOrders > 0 ? totalAmount.divide(new java.math.BigDecimal(totalOrders), 2, java.math.RoundingMode.HALF_UP) : java.math.BigDecimal.ZERO);
+        result.put("averageAmount", totalOrders > 0 ? totalAmount.divide(new BigDecimal(totalOrders), 2, RoundingMode.HALF_UP) : BigDecimal.ZERO);
         result.put("statusDistribution", statusCount);
         return result;
     }
@@ -1390,25 +1398,25 @@ public class OrdersServiceImpl implements OrdersService {
             // 设置响应头
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
             response.setCharacterEncoding("utf-8");
-            String fileName = java.net.URLEncoder.encode("订单列表_" + new java.text.SimpleDateFormat("yyyyMMdd").format(new Date()), "UTF-8");
+            String fileName = URLEncoder.encode("订单列表_" + new SimpleDateFormat("yyyyMMdd").format(new Date()), "UTF-8");
             response.setHeader("Content-Disposition", "attachment;filename=" + fileName + ".xlsx");
 
             // 使用 Apache POI 生成 Excel
-            org.apache.poi.ss.usermodel.Workbook workbook = new org.apache.poi.xssf.usermodel.XSSFWorkbook();
-            org.apache.poi.ss.usermodel.Sheet sheet = workbook.createSheet("订单列表");
+            Workbook workbook = new XSSFWorkbook();
+            Sheet sheet = workbook.createSheet("订单列表");
 
             // 表头
-            org.apache.poi.ss.usermodel.Row headerRow = sheet.createRow(0);
+            Row headerRow = sheet.createRow(0);
             String[] headers = {"订单号", "标题", "游戏", "系统", "服务区", "发单用户", "接单用户", "金额", "状态", "下单时间", "开始时间", "完成时间"};
             for (int i = 0; i < headers.length; i++) {
-                org.apache.poi.ss.usermodel.Cell cell = headerRow.createCell(i);
+                Cell cell = headerRow.createCell(i);
                 cell.setCellValue(headers[i]);
             }
 
             // 数据行
             int rowNum = 1;
             for (OrdersListVO vo : list) {
-                org.apache.poi.ss.usermodel.Row row = sheet.createRow(rowNum++);
+                Row row = sheet.createRow(rowNum++);
                 row.createCell(0).setCellValue(vo.getOrderNo() != null ? vo.getOrderNo() : "");
                 row.createCell(1).setCellValue(vo.getTitle() != null ? vo.getTitle() : "");
                 row.createCell(2).setCellValue(vo.getGameName() != null ? vo.getGameName() : "");

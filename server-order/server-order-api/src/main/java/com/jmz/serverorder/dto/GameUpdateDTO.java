@@ -2,6 +2,8 @@ package com.jmz.serverorder.dto;
 
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * 游戏更新DTO
  */
@@ -26,5 +28,5 @@ public class GameUpdateDTO {
     /**
      * 关联系统ID列表
      */
-    private java.util.List<Integer> systemIds;
+    private List<Integer> systemIds;
 } 

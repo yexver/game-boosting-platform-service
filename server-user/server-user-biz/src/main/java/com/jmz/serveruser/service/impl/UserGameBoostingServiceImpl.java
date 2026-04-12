@@ -7,7 +7,10 @@ import com.jmz.serveruser.service.UserGameBoostingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -26,18 +29,18 @@ public class UserGameBoostingServiceImpl
     @Transactional
     public void setUserBoostingGames(Long userId, List<?> gameIds) {
         // 删除原有
-        userGameBoostingMapper.delete(new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<com.jmz.serveruser.entity.UserGameBoosting>().eq("user_id", userId));
+        userGameBoostingMapper.delete(new QueryWrapper<UserGameBoosting>().eq("user_id", userId));
         // 批量插入新
         if (gameIds != null && !gameIds.isEmpty()) {
-            List<com.jmz.serveruser.entity.UserGameBoosting> list = new java.util.ArrayList<>();
+            List<UserGameBoosting> list = new ArrayList<>();
             for (Object gid : gameIds) {
                 if (gid == null) continue;
                 Integer gameId = gid instanceof Integer ? (Integer) gid : Integer.valueOf(gid.toString());
-                com.jmz.serveruser.entity.UserGameBoosting rel = new com.jmz.serveruser.entity.UserGameBoosting();
+                UserGameBoosting rel = new UserGameBoosting();
                 rel.setUserId(userId);
                 rel.setGameId(gameId);
-                rel.setCreatedAt(new java.util.Date());
-                rel.setUpdatedAt(new java.util.Date());
+                rel.setCreatedAt(new Date());
+                rel.setUpdatedAt(new Date());
                 list.add(rel);
             }
             if (!list.isEmpty()) {

@@ -3,6 +3,7 @@ package com.jmz.serverorder.dto;
 import lombok.Data;
 
 import jakarta.validation.constraints.NotBlank;
+import java.util.List;
 
 /**
  * 游戏创建DTO
@@ -29,5 +30,5 @@ public class GameCreateDTO{
     /**
      * 关联系统ID列表
      */
-    private java.util.List<Integer> systemIds;
+    private List<Integer> systemIds;
 } 

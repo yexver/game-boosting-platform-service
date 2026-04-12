@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.jmz.jmzcommoncore.responseResult.R;
+import com.jmz.jmzcommonsecuritydomain.domain.LoginUser;
 import com.jmz.serverwebsocket.feign.WebSocketFeignClient;
 import com.jmz.serverorder.dto.MessagesQueryDTO;
 import com.jmz.serverorder.dto.SendMessageDTO;
@@ -45,8 +46,8 @@ public class MessagesServiceImpl implements MessageServices {
 
     private Long getCurrentUserId() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (principal instanceof com.jmz.jmzcommonsecuritydomain.domain.LoginUser) {
-            return ((com.jmz.jmzcommonsecuritydomain.domain.LoginUser) principal).getUserId();
+        if (principal instanceof LoginUser) {
+            return ((LoginUser) principal).getUserId();
         }
         throw new RuntimeException("无法获取当前登录用户ID");
     }
@@ -416,11 +417,11 @@ public class MessagesServiceImpl implements MessageServices {
     @Override
     public List<ChatMessageVO> getOrderMessagesByOrderId(Long orderId) {
         List<Message> messages = messageMapper.selectList(
-            new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<Message>()
+            new LambdaQueryWrapper<Message>()
                 .eq(Message::getOrderId, orderId)
                 .orderByAsc(Message::getCreatedAt)
         );
-        return messages.stream().map(this::toChatMessageVO).collect(java.util.stream.Collectors.toList());
+        return messages.stream().map(this::toChatMessageVO).collect(Collectors.toList());
     }
 
     private ChatMessageVO toChatMessageVO(Message message) {

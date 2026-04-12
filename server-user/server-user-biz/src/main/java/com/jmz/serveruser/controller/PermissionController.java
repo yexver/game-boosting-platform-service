@@ -9,9 +9,10 @@ import com.jmz.serveruser.service.PermissionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/permission")
@@ -28,7 +29,7 @@ public class PermissionController {
         List<Permission> permissions = permissionService.list();
         List<Map<String, Object>> result = permissions.stream()
             .map(p -> {
-                Map<String, Object> map = new java.util.HashMap<>();
+                Map<String, Object> map = new HashMap<>();
                 map.put("id", p.getId());
                 map.put("name", p.getName());
                 map.put("description", p.getDescription());

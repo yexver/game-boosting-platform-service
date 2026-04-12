@@ -208,8 +208,8 @@ public class OrdersController {
     @PostMapping("/arbitrate")
     public R arbitrateOrder(@RequestBody Map<String, Object> data) throws Exception {
         Long orderId = null;
-        java.math.BigDecimal payAmount = null;
-        java.math.BigDecimal depositAmount = null;
+        BigDecimal payAmount = null;
+        BigDecimal depositAmount = null;
         String remark = null;
         if (data.get("orderId") instanceof Number) {
             orderId = ((Number) data.get("orderId")).longValue();
@@ -217,10 +217,10 @@ public class OrdersController {
             orderId = Long.valueOf((String) data.get("orderId"));
         }
         if (data.get("payAmount") != null) {
-            payAmount = new java.math.BigDecimal(data.get("payAmount").toString());
+            payAmount = new BigDecimal(data.get("payAmount").toString());
         }
         if (data.get("depositAmount") != null) {
-            depositAmount = new java.math.BigDecimal(data.get("depositAmount").toString());
+            depositAmount = new BigDecimal(data.get("depositAmount").toString());
         }
         if (data.get("remark") != null) {
             remark = data.get("remark").toString();

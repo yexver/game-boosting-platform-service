@@ -15,7 +15,9 @@ import com.jmz.serveruser.vo.MenuVo;
 import com.jmz.jmzcommoncore.responseResult.R;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -81,9 +83,9 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
         }
         Page<Menu> pageObj = new Page<>(menuQueryDTO.getPage(), menuQueryDTO.getSize());
         IPage<Menu> resultPage = this.page(pageObj, wrapper);
-        List<java.util.Map<String, Object>> result = resultPage.getRecords().stream()
+        List<Map<String, Object>> result = resultPage.getRecords().stream()
             .map(m -> {
-                java.util.Map<String, Object> map = new java.util.HashMap<>();
+                Map<String, Object> map = new HashMap<>();
                 map.put("id", m.getId());
                 map.put("name", m.getName());
                 map.put("path", m.getPath());
@@ -97,7 +99,7 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
                 return map;
             })
             .collect(Collectors.toList());
-        java.util.Map<String, Object> resp = new java.util.HashMap<>();
+        Map<String, Object> resp = new HashMap<>();
         resp.put("records", result);
         resp.put("total", resultPage.getTotal());
         resp.put("current", resultPage.getCurrent());

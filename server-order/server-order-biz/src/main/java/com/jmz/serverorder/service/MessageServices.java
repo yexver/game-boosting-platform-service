@@ -2,11 +2,13 @@ package com.jmz.serverorder.service;
 
 import com.jmz.serverorder.dto.MessagesQueryDTO;
 import com.jmz.serverorder.dto.SendMessageDTO;
+import com.jmz.serverorder.vo.ChatMessageVO;
 import com.jmz.serverorder.vo.SendMessageResponseVO;
 import com.jmz.serverorder.vo.UnreadCountVO;
 import com.jmz.serveruser.vo.UserInfoVo;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Map;
 
 public interface MessageServices {
@@ -53,5 +55,5 @@ public interface MessageServices {
     /**
      * 获取订单消息列表（不分页）
      */
-    java.util.List<com.jmz.serverorder.vo.ChatMessageVO> getOrderMessagesByOrderId(Long orderId);
+    List<ChatMessageVO> getOrderMessagesByOrderId(Long orderId);
 }
