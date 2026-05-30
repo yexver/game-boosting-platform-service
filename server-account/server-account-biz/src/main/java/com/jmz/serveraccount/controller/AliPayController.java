@@ -40,11 +40,11 @@ public class AliPayController {
     @GetMapping("/pay")
     public void pay(String url, Long userId, BigDecimal price, HttpServletResponse httpResponse) throws Exception {
         AlipayTradePagePayRequest request = new AlipayTradePagePayRequest();
-        request.setNotifyUrl("/alipay/notify");
+        request.setNotifyUrl(aliPayConfig.getNotifyUrl());
         JSONObject bizContent = new JSONObject();
         bizContent.set("out_trade_no", UUID.randomUUID());
         bizContent.set("total_amount", price);
-        bizContent.set("subject", String.valueOf(userId));
+        bizContent.set("subject", "游戏代练平台账户充值-" + userId);
         bizContent.set("product_code", "FAST_INSTANT_TRADE_PAY");
         request.setBizContent(bizContent.toString());
         request.setReturnUrl(url);
