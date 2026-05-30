@@ -40,6 +40,16 @@ public class AliCloudAIService {
      * @return AI回复的消息
      */
     public String askQuestion(String userMessage) {
+        return askQuestion(userMessage, null);
+    }
+
+    /**
+     * 调用通义千问大模型（支持自定义系统提示词）
+     * @param userMessage 用户输入的消息
+     * @param customSystemPrompt 自定义系统提示词（可选，为空则使用默认）
+     * @return AI回复的消息
+     */
+    public String askQuestion(String userMessage, String customSystemPrompt) {
         try {
             // 构建请求头
             HttpHeaders headers = new HttpHeaders();
@@ -47,7 +57,7 @@ public class AliCloudAIService {
             headers.set("Authorization", "Bearer " + apiKey);
 
             // 构建请求体
-            Map<String, Object> requestBody = buildRequestBody(userMessage);
+            Map<String, Object> requestBody = buildRequestBody(userMessage, customSystemPrompt);
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
@@ -70,7 +80,7 @@ public class AliCloudAIService {
     /**
      * 构建请求体
      */
-    private Map<String, Object> buildRequestBody(String userMessage) {
+    private Map<String, Object> buildRequestBody(String userMessage, String customSystemPrompt) {
         Map<String, Object> requestBody = new HashMap<>();
 
         // 模型参数
@@ -79,10 +89,12 @@ public class AliCloudAIService {
         // 输入参数
         Map<String, Object> input = new HashMap<>();
 
-        // 消息列表 - 添加系统提示词
+        // 消息列表 - 使用自定义系统提示词或默认
+        String systemPrompt = customSystemPrompt != null ? customSystemPrompt : buildSystemPrompt();
+
         Map<String, String> systemMessage = new HashMap<>();
         systemMessage.put("role", "system");
-        systemMessage.put("content", buildSystemPrompt());
+        systemMessage.put("content", systemPrompt);
 
         Map<String, String> userMessageMap = new HashMap<>();
         userMessageMap.put("role", "user");
@@ -186,6 +198,16 @@ public class AliCloudAIService {
      * @return AI回复
      */
     public String chatWithContext(List<Map<String, String>> messages) {
+        return chatWithContext(messages, null);
+    }
+
+    /**
+     * 带上下文的对话（支持自定义系统提示词）
+     * @param messages 对话历史
+     * @param customSystemPrompt 自定义系统提示词（可选）
+     * @return AI回复
+     */
+    public String chatWithContext(List<Map<String, String>> messages, String customSystemPrompt) {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -197,9 +219,10 @@ public class AliCloudAIService {
             Map<String, Object> input = new HashMap<>();
 
             // 添加系统提示词
+            String systemPrompt = customSystemPrompt != null ? customSystemPrompt : buildSystemPrompt();
             Map<String, String> systemMessage = new HashMap<>();
             systemMessage.put("role", "system");
-            systemMessage.put("content", buildSystemPrompt());
+            systemMessage.put("content", systemPrompt);
 
             // 构建消息列表
             java.util.ArrayList<Map<String, String>> allMessages = new ArrayList<>();
@@ -236,7 +259,6 @@ public class AliCloudAIService {
      * 流式对话（返回完整文本，适合前端流式展示）
      */
     public String chatStream(String userMessage) {
-        // 流式接口返回完整内容，前端可自行处理流式展示
         return askQuestion(userMessage);
     }
 }

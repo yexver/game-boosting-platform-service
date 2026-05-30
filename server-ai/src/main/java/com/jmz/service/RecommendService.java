@@ -64,7 +64,8 @@ public class RecommendService {
      */
     public PriceRecommendVO getPriceRecommend(PostRecommendDTO dto) {
         String prompt = buildPricePrompt(dto);
-        String aiResponse = aiService.askQuestion(prompt);
+        String systemPrompt = buildPriceSystemPrompt();
+        String aiResponse = aiService.askQuestion(prompt, systemPrompt);
 
         return parsePriceRecommend(aiResponse, dto);
     }
@@ -74,7 +75,8 @@ public class RecommendService {
      */
     public OrderOptimizeVO getOrderOptimize(PostRecommendDTO dto) {
         String prompt = buildOptimizePrompt(dto);
-        String aiResponse = aiService.askQuestion(prompt);
+        String systemPrompt = buildOptimizeSystemPrompt();
+        String aiResponse = aiService.askQuestion(prompt, systemPrompt);
 
         return parseOrderOptimize(aiResponse);
     }
@@ -88,7 +90,8 @@ public class RecommendService {
         try {
             // 构建推荐Prompt
             String prompt = buildTakeRecommendPrompt(dto);
-            String aiResponse = aiService.askQuestion(prompt);
+            String systemPrompt = buildTakeRecommendSystemPrompt();
+            String aiResponse = aiService.askQuestion(prompt, systemPrompt);
 
             // 解析推荐结果
             List<RecommendedOrderVO> recommendedOrders = parseRecommendedOrders(aiResponse, dto.getAvailableOrders());
@@ -129,9 +132,9 @@ public class RecommendService {
         prompt.append("请根据以下订单信息，给出合理的价格建议：\n");
         prompt.append("- 游戏：").append(dto.getGameName() != null ? dto.getGameName() : "未知").append("\n");
         prompt.append("- 代练类型：").append(boostingTypeName).append("\n");
-        prompt.append("- 当前段位：").append(dto.getCurrentRank() != null ? dto.getCurrentRank() : "未知").append("\n");
-        prompt.append("- 目标段位：").append(dto.getTargetRank() != null ? dto.getTargetRank() : "未知").append("\n");
         prompt.append("- 时限要求：").append(dto.getTimeLimit() != null ? dto.getTimeLimit() : "未说明").append("小时\n");
+        prompt.append("- 订单标题：").append(dto.getTitle() != null ? dto.getTitle() : "未填写").append("\n");
+        prompt.append("- 订单描述：").append(dto.getDescription() != null ? dto.getDescription() : "未填写").append("\n");
 
         if (dto.getExpectedPrice() != null) {
             prompt.append("- 期望价格：").append(dto.getExpectedPrice()).append("元\n");
@@ -151,6 +154,33 @@ public class RecommendService {
         prompt.append("\n只返回JSON，不要其他内容。");
 
         return prompt.toString();
+    }
+
+    /**
+     * 价格分析系统提示词
+     */
+    private String buildPriceSystemPrompt() {
+        return "你是一个专业的游戏代练价格分析师。你的任务是根据用户提供的订单信息，分析并给出合理的价格建议。"
+             + "你必须严格按照用户要求的JSON格式返回数据，不要添加任何解释或多余内容。"
+             + "价格要基于市场行情和订单难度综合评估。";
+    }
+
+    /**
+     * 订单优化系统提示词
+     */
+    private String buildOptimizeSystemPrompt() {
+        return "你是一个专业的游戏代练订单优化专家。你的任务是帮助用户优化订单标题和描述，提高订单的吸引力。"
+             + "你必须严格按照用户要求的JSON格式返回数据，不要添加任何解释或多余内容。"
+             + "优化的目标是好接单、信息完整、描述清晰。";
+    }
+
+    /**
+     * 接单推荐系统提示词
+     */
+    private String buildTakeRecommendSystemPrompt() {
+        return "你是一个专业的游戏代练订单匹配助手。你的任务是根据代练师的画像和可用订单，智能推荐最合适的订单。"
+             + "你必须严格按照用户要求的JSON格式返回数据，不要添加任何解释或多余内容。"
+             + "推荐时要考虑订单难度、代练师擅长领域、收益和时间效率等因素。";
     }
 
     /**
