@@ -853,39 +853,38 @@ public class OrdersServiceImpl implements OrdersService {
             return R.error("订单不存在");
         }
         // 只能未接手状态（1）且当前用户为发单者才能撤销
+        if (order.getStatus() != 1) {
+            return R.error("只有未接手的订单才能撤销");
+        }
+
         Long currentUserId = getCurrentUserId();
-        // 更新订单状态为6-已撤销
+
+        // 先执行远程调用解冻资金（减少全局锁持有时间）
+        AccountAdjustDTO unfreezeDTO = new AccountAdjustDTO();
+        unfreezeDTO.setUserId(order.getPublisherId());
+        unfreezeDTO.setAmount(order.getPrice());
+        unfreezeDTO.setType(AccountTypeEnum.UNFREEZE);
+        unfreezeDTO.setRemark("订单取消解冻资金，订单号:" + order.getOrderNo());
+        unfreezeDTO.setOrderId(order.getId());
+        userAccountFeignClient.adjustAccountBalance(unfreezeDTO);
+
+        // 再更新订单状态（获取全局锁）
         int fromStatus = order.getStatus();
         order.setStatus(6); // 6-已撤销
         order.setUpdatedAt(new Date());
         ordersMapper.updateById(order);
+
         // 插入状态日志
         OrderStatusLogs log = new OrderStatusLogs();
         log.setOrderId(orderId);
         log.setFromStatus(fromStatus);
         log.setToStatus(6);
         log.setOperatorId(currentUserId);
-        log.setOperatorType(1); // 发单者
+        log.setOperatorType(1);
         log.setRemark("发单者主动撤销订单");
         log.setCreatedAt(new Date());
-        // 解冻发单者资金（因为是未接手状态取消，全额返还）
-        AccountAdjustDTO unfreezeDTO = new AccountAdjustDTO();
-        unfreezeDTO.setUserId(order.getPublisherId());
-        unfreezeDTO.setAmount(order.getPrice());
-        unfreezeDTO.setType(AccountTypeEnum.FROZEN_DEDUCT); // 解冻并扣除
-        unfreezeDTO.setRemark("订单取消解冻资金，订单号:" + order.getOrderNo());
-        unfreezeDTO.setOrderId(order.getId());
-        userAccountFeignClient.adjustAccountBalance(unfreezeDTO);
-
-        // 返还资金给发单者
-        AccountAdjustDTO returnDTO = new AccountAdjustDTO();
-        returnDTO.setUserId(order.getPublisherId());
-        returnDTO.setAmount(order.getPrice());
-        returnDTO.setType(AccountTypeEnum.INCOME); // 增加余额
-        returnDTO.setRemark("订单取消返还资金，订单号:" + order.getOrderNo());
-        returnDTO.setOrderId(order.getId());
-        userAccountFeignClient.adjustAccountBalance(returnDTO);
         orderStatusLogsMapper.insert(log);
+
         return R.success("订单已撤销");
     }
 

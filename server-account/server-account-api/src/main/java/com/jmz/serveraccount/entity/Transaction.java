@@ -28,6 +28,7 @@ public class Transaction {
 
     private String transactionNo;
 
+    @JsonSerialize(using = ToStringSerializer.class)
     private Integer type;
 
     private BigDecimal amount;

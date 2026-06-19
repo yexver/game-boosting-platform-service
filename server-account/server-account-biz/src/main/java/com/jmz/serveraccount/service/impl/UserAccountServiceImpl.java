@@ -132,7 +132,20 @@ public class UserAccountServiceImpl extends ServiceImpl<UserAccountMapper, UserA
             return false;
         }
 
-        updateBalanceSnapshots(typeEnum, adjustDTO, balanceBefore, frozenBefore, balanceAfter, frozenAfter);
+        // 计算操作后的余额快照
+        if (typeEnum.isDeduct()) {
+            balanceAfter = balanceBefore.subtract(amount);
+        } else if (typeEnum.isFreeze()) {
+            balanceAfter = balanceBefore.subtract(amount);
+            frozenAfter = frozenBefore.add(amount);
+        } else if (typeEnum == AccountTypeEnum.UNFREEZE) {
+            balanceAfter = balanceBefore.add(amount);
+            frozenAfter = frozenBefore.subtract(amount);
+        } else if (typeEnum == AccountTypeEnum.FROZEN_DEDUCT) {
+            frozenAfter = frozenBefore.subtract(amount);
+        } else if (typeEnum.isAdd()) {
+            balanceAfter = balanceBefore.add(amount);
+        }
 
         // 插入交易流水记录
         insertTransactionRecord(adjustDTO, balanceBefore, frozenBefore, balanceAfter, frozenAfter);
@@ -223,27 +236,6 @@ public class UserAccountServiceImpl extends ServiceImpl<UserAccountMapper, UserA
             throw new RuntimeException("并发冲突，请稍后重试");
         }
         return true;
-    }
-
-    /**
-     * 计算余额快照
-     */
-    private void updateBalanceSnapshots(AccountTypeEnum typeEnum, AccountAdjustDTO adjustDTO,
-                                         BigDecimal balanceBefore, BigDecimal frozenBefore,
-                                         BigDecimal balanceAfter, BigDecimal frozenAfter) {
-        if (typeEnum.isDeduct()) {
-            balanceAfter = balanceBefore.subtract(adjustDTO.getAmount());
-        } else if (typeEnum.isFreeze()) {
-            balanceAfter = balanceBefore.subtract(adjustDTO.getAmount());
-            frozenAfter = frozenBefore.add(adjustDTO.getAmount());
-        } else if (typeEnum == AccountTypeEnum.UNFREEZE) {
-            balanceAfter = balanceBefore.add(adjustDTO.getAmount());
-            frozenAfter = frozenBefore.subtract(adjustDTO.getAmount());
-        } else if (typeEnum == AccountTypeEnum.FROZEN_DEDUCT) {
-            frozenAfter = frozenBefore.subtract(adjustDTO.getAmount());
-        } else if (typeEnum.isAdd()) {
-            balanceAfter = balanceBefore.add(adjustDTO.getAmount());
-        }
     }
 
     /**
