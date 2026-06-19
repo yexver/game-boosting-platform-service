@@ -1,0 +1,212 @@
+====================================
+一、题目详情
+====================================
+
+【研究方向】
+软件工程 / Web应用开发
+
+【题目介绍】
+随着互联网游戏产业的快速发展，游戏代练市场日益壮大。传统的代练交易方式存在信息不对称、交易不安全、缺乏信任机制等问题。本项目旨在设计并实现一个基于SpringCloud微服务架构和Vue.js前端框架的游戏代练平台，为游戏玩家（雇主）和代练员提供便捷、安全、可信的在线交易环境。平台将实现用户管理、订单管理、支付管理、评价管理等核心功能，通过微服务架构保证系统的高可用性和可扩展性。
+
+【完成题目的基本要求】
+1. 掌握SpringCloud微服务架构的设计与开发方法
+2. 掌握Vue.js前端框架的使用
+3. 完成游戏代练平台的需求分析、架构设计、数据库设计
+4. 实现用户管理、订单管理、接单管理、支付管理、评价管理等核心功能
+5. 完成系统测试与性能优化
+6. 撰写完整的毕业论文
+
+【参考资料】
+1. 郑树泉. 微服务架构设计与实践. 机械工业出版社, 2021.
+2. 林信良. Spring Boot实战. 人民邮电出版社, 2020.
+3. 尤雨溪等. Vue.js设计与实现. 人民邮电出版社, 2022.
+4. 李兴华. Java开发实战经典. 清华大学出版社, 2019.
+5. Spring Cloud官方文档. https://spring.io/projects/spring-cloud
+6. Vue.js官方文档. https://vuejs.org/
+7. 张宇. 分布式系统设计与实践. 电子工业出版社, 2022.
+8. 刘增辉. MySQL性能优化实践. 机械工业出版社, 2021.
+
+
+====================================
+二、起讫日期
+====================================
+
+2025年09月01日-2026年05月20日
+
+
+====================================
+三、毕业设计的要求和内容
+（包括原始数据、技术要求、工作要求）
+====================================
+
+（一）原始数据
+- 游戏代练市场需求调研数据
+- 现有游戏代练平台功能对比分析
+- 用户行为分析数据
+
+（二）技术要求
+- 后端技术栈：SpringCloud微服务架构、Spring Boot、Spring Security、JWT、MySQL、Redis、Nacos、Sentinel
+- 前端技术栈：Vue.js 3、Element Plus、Vite、Axios、Pinia
+- 部署环境：Docker容器化部署
+
+（三）工作要求
+1. 完成系统需求分析文档
+2. 完成系统设计文档（含架构图、流程图、ER图）
+3. 完成核心模块编码实现
+4. 完成系统测试报告
+5. 完成毕业论文撰写
+
+（四）主要功能模块
+1. 用户模块：用户注册、登录、角色管理（雇主/代练）、个人信息管理
+2. 订单模块：发布代练订单、订单状态跟踪、订单取消/退款
+3. 接单模块：代练员接单、订单分配、进度更新
+4. 支付模块：订单支付、押金管理、退款处理
+5. 评价模块：双方互评、信誉评分、投诉处理
+6. 游戏模块：游戏分类、游戏角色绑定
+7. 消息模块：站内信、订单通知
+
+
+====================================
+四、毕业论文的要求和内容
+====================================
+
+1. 综述游戏代练平台的研究背景与意义
+2. 分析国内外相关技术的发展现状
+3. 完成系统需求分析，包括功能需求和非功能需求
+4. 设计系统整体架构，完成数据库设计
+5. 详细阐述核心模块的实现过程与技术难点
+6. 完成系统测试，分析测试结果
+7. 总结设计工作，提出改进方向
+
+
+====================================
+五、毕业设计图纸内容及张数
+====================================
+
+根据论文内容，图纸主要包括以下类别（共约70张）：
+
+
+
+（一）业务流程图：约20张
+涵盖开启代练、订单发布/接单/验收/取消/仲裁、资金管理、AI智能问答等业务流程图。
+（二）用例图：约15张
+包括游戏代练平台总体用例图及各类用户角色的用例图（登录、订单、消息、AI等）。
+（三）系统架构图：约1张
+前后端分离体系结构图
+（四）系统设计图：约12张
+包括系统总体功能结构图、各功能模块缩略类图（认证授权、系统管理、订单管理、游戏数据、账户管理、代练管理、AI服务、消息通讯、文件管理等模块缩略类图）以及实体类关系设计图。
+（五）系统界面截图：约25张
+包括登录界面、注册界面、订单管理界面、游戏管理界面、账户管理界面、消息通讯界面、AI智能客服界面等。
+
+合计：约72张
+
+
+====================================
+六、研究方案、目标
+====================================
+
+（一）研究目标
+设计并实现一个高效、安全、可扩展的游戏代练平台，为游戏玩家和代练员提供便捷的交易渠道，解决传统代练交易中存在的信息不对称、信任机制缺失等问题。
+
+（二）研究方案
+1. 文献调研阶段（2025.09-2025.10）：调研国内外游戏代练市场现状，分析现有平台优缺点
+2. 需求分析阶段（2025.10-2025.11）：通过问卷调查和访谈，收集用户需求，确定系统功能
+3. 系统设计阶段（2025.12）：采用SpringCloud微服务架构，进行系统架构设计、数据库设计、接口设计
+4. 系统实现阶段（2026.01-2026.03）：按照模块化开发，完成前后端开发、数据库实现
+5. 测试优化阶段（2026.03）：进行功能测试、性能测试，优化系统性能
+6. 论文撰写阶段（2026.04-2026.05）：整理技术文档，撰写毕业论文
+
+
+====================================
+七、毕业设计实物内容及要求
+====================================
+
+1. 完整的游戏代练平台系统源码（前后端代码）
+2. 系统部署文档，说明部署步骤和环境要求
+3. 系统使用说明书
+4. 可正常运行的系统演示环境
+5. 毕业论文一份（约3万字）
+
+
+====================================
+八、阅读书目清单
+====================================
+
+1. 中国音数协游戏工委. 2023年中国游戏产业报告[R]. 北京: 中国音像与数字出版协会, 2023.
+2. Brown T B, Mann B, Ryder N, et al. Language models are few-shot learners[J]. Advances in Neural Information Processing Systems, 2020, 33: 1877-1901.
+3. Ouyang L, Wu J, Jiang X, et al. Training language models to follow instructions with human feedback[J]. Advances in Neural Information Processing Systems, 2022, 35: 27730-27744.
+4. 李航. 统计学习方法[M]. 2版. 北京: 清华大学出版社, 2012.
+5. You E. Vue 3 Documentation[EB/OL]. https://vuejs.org/, 2023.
+6. Pivotal Software. Spring Boot Reference Guide[EB/OL]. https://spring.io/projects/spring-boot, 2023.
+7. Alibaba. Nacos Documentation[EB/OL]. https://nacos.io/zh/docs/, 2023.
+8. Fette I, Melnikov A. The WebSocket Protocol: RFC 6455[S]. IETF, 2011.
+9. Jones M, Bradley J, Sakimura N. JSON Web Token (JWT): RFC 7519[S]. IETF, 2015.
+10. Fowler M. Patterns of Enterprise Application Architecture[M]. Addison-Wesley Professional, 2002.
+11. Newman S. Building Microservices: Designing Fine-Grained Systems[M]. 2nd ed. O'Reilly Media, 2021.
+12. Sandhu R S, Coyne E J, Feinstein H L, et al. Role-based access control models[J]. Computer, 1996, 29(2): 38-47.
+13. Silberschatz A, Korth H F, Sudarshan S. Database System Concepts[M]. 7th ed. McGraw-Hill Education, 2019.
+14. 蚂蚁集团. 支付宝开放平台文档[EB/OL]. https://open.alipay.com/, 2023.
+15. 阿里云. 阿里云百炼平台文档[EB/OL]. https://help.aliyun.com/zh/model-studio/, 2024.
+16. 阿里云. 阿里云对象存储OSS文档[EB/OL]. https://help.aliyun.com/zh/oss/, 2023.
+17. Redis Labs. Redis Documentation[EB/OL]. https://redis.io/docs/, 2023.
+18. Oracle. MySQL 8.0 Reference Manual[EB/OL]. https://dev.mysql.com/doc/refman/8.0/en/, 2023.
+19. 范晓平. WebSocket实战[M]. 北京: 人民邮电出版社, 2016.
+20. Stallings W. Cryptography and Network Security: Principles and Practices[M]. 7th ed. Pearson, 2017.
+
+
+====================================
+九���毕业设计（论文）进度计划
+====================================
+
+阶段1：选题与开题
+工作内容：选题确定、开题报告撰写
+起讫日期：2025年10月21日-2025年11月15日
+备注：完成开题答辩
+
+阶段2：需求分析
+工作内容：需求调研、功能分析
+起讫日期：2025年11月16日-2026年03月15日
+备注：提交需求规格说明书
+
+阶段3：系统设计
+工作内容：架构设计、数据库设计
+起讫日期：2026年03月16日-2026年05月15日
+备注：提交设计文档
+
+阶段4：编码实现
+工作内容：前后端开发、测试
+起讫日期：2025年10月21日-2026年04月15日
+备注：完成系统开发
+
+阶段5：论文撰写
+工作内容：论文撰写、修改
+起讫日期：2026年04月16日-2026年05月15日
+备注：完成初稿
+
+阶段6：答辩准备
+工作内容：论文完善、答辩准备
+起讫日期：2026年05月16日-2026年06月10日
+备注：完成答辩
+
+
+====================================
+十、主要参考资料
+====================================
+
+1. Brown T B, Mann B, Ryder N, et al. Language models are few-shot learners[J]. Advances in Neural Information Processing Systems, 2020, 33: 1877-1901.
+2. Ouyang L, Wu J, Jiang X, et al. Training language models to follow instructions with human feedback[J]. Advances in Neural Information Processing Systems, 2022, 35: 27730-27744.
+3. 李航. 统计学习方法[M]. 2版. 北京: 清华大学出版社, 2012.
+4. You E. Vue 3 Documentation[EB/OL]. https://vuejs.org/, 2023.
+5. Pivotal Software. Spring Boot Reference Guide[EB/OL]. https://spring.io/projects/spring-boot, 2023.
+6. Alibaba. Nacos Documentation[EB/OL]. https://nacos.io/zh/docs/, 2023.
+7. Fette I, Melnikov A. The WebSocket Protocol: RFC 6455[S]. IETF, 2011.
+8. Jones M, Bradley J, Sakimura N. JSON Web Token (JWT): RFC 7519[S]. IETF, 2015.
+9. Fowler M. Patterns of Enterprise Application Architecture[M]. Addison-Wesley Professional, 2002.
+10. Newman S. Building Microservices: Designing Fine-Grained Systems[M]. 2nd ed. O'Reilly Media, 2021.
+11. 蚂蚁集团. 支付宝开放平台文档[EB/OL]. https://open.alipay.com/, 2023.
+12. 阿里云. 阿里云百炼平台文档[EB/OL]. https://help.aliyun.com/zh/model-studio/, 2024.
+13. 阿里云. 阿里云对象存储OSS文档[EB/OL]. https://help.aliyun.com/zh/oss/, 2023.
+14. Redis Labs. Redis Documentation[EB/OL]. https://redis.io/docs/, 2023.
+15. Oracle. MySQL 8.0 Reference Manual[EB/OL]. https://dev.mysql.com/doc/refman/8.0/en/, 2023.
+16. 范晓平. WebSocket实战[M]. 北京: 人民邮电出版社, 2016.
+

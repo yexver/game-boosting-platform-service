@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>游戏代练平台实体关系图</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #ffffff;
+            padding: 20px;
+        }
+        .mermaid {
+            display: flex;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="mermaid">
+erDiagram
+    %% 用户模块
+    tb_jmz_user {
+        bigint user_id PK
+        varchar username
+        varchar phone
+        varchar password
+        varchar email
+        varchar avatar
+        varchar nickname
+        tinyint gender
+        tinyint status
+        datetime create_time
+        datetime update_time
+        tinyint is_boosting_enabled
+        tinyint identity_verified
+    }
+
+    tb_jmz_user_accounts {
+        bigint id PK
+        bigint user_id FK
+        decimal balance
+        decimal frozen_amount
+        decimal total_income
+        decimal total_expense
+        bigint version
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    tb_jmz_user_role {
+        bigint user_id PKFK
+        int role_id PKFK
+    }
+
+    tb_jmz_user_game_boosting {
+        bigint user_id PKFK
+        int game_id PKFK
+        datetime created_at
+        datetime updated_at
+    }
+
+    %% 游戏区服模块
+    tb_jmz_games {
+        int id PK
+        varchar name
+        varchar icon
+        tinyint status
+        int sort_order
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    tb_jmz_systems {
+        int id PK
+        varchar name
+        int sort_order
+        varchar icon
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    tb_jmz_game_systems {
+        int id PK
+        int game_id FK
+        int system_id FK
+    }
+
+    tb_jmz_game_servers {
+        int id PK
+        int game_id FK
+        int system_id FK
+        varchar name
+        int sort_order
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    %% 订单模块
+    tb_jmz_orders {
+        bigint id PK
+        varchar order_no
+        bigint publisher_id FK
+        bigint taker_id FK
+        bigint manager_id FK
+        int game_id FK
+        int system_id FK
+        int server_id FK
+        varchar title
+        tinyint boosting_type
+        text description
+        text account_info
+        decimal price
+        varchar actual_amount
+        decimal platform_fee
+        decimal security_deposit
+        decimal efficiency_deposit
+        tinyint status
+        timestamp start_at
+        int time_limit
+        timestamp actual_at
+        timestamp created_at
+        timestamp updated_at
+        tinyint paid
+        varchar remark
+    }
+
+    %% 交易模块
+    tb_jmz_transactions {
+        bigint id PK
+        bigint user_id FK
+        bigint operator_id FK
+        bigint order_id FK
+        varchar transaction_no
+        tinyint type
+        decimal amount
+        decimal balance_before
+        decimal balance_after
+        tinyint status
+        text remark
+        timestamp created_at
+        timestamp updated_at
+        decimal frozen_before
+        decimal frozen_after
+        varchar idempotency_key
+    }
+
+    %% 消息模块
+    tb_jmz_messages {
+        bigint id PK
+        bigint order_id FK
+        bigint sender_id FK
+        bigint receiver_id FK
+        tinyint sender_type
+        tinyint message_type
+        text content
+        varchar file_url
+        varchar jump_url
+        tinyint is_read
+        timestamp created_at
+    }
+
+    %% 权限菜单模块
+    tb_jmz_role {
+        int id PK
+        varchar name
+        varchar keyword
+        varchar description
+    }
+
+    tb_jmz_permission {
+        int id PK
+        varchar name
+        varchar keyword
+        varchar description
+    }
+
+    tb_jmz_role_permission {
+        int role_id PKFK
+        int permission_id PKFK
+    }
+
+    tb_jmz_menu {
+        int id PK
+        varchar name
+        varchar path
+        varchar component
+        int parent_id FK
+        tinyint type
+        varchar icon
+        varchar redirect
+        int order_num
+        varchar permission
+        datetime created_at
+        datetime updated_at
+        int hidden
+    }
+
+    tb_jmz_role_menu {
+        int role_id PKFK
+        int menu_id PKFK
+    }
+
+    %% 关系
+    tb_jmz_user ||--o| tb_jmz_user_accounts : ""
+    tb_jmz_user ||--o{ tb_jmz_user_role : ""
+    tb_jmz_user ||--o{ tb_jmz_user_game_boosting : ""
+    tb_jmz_games ||--o{ tb_jmz_game_systems : ""
+    tb_jmz_systems ||--o{ tb_jmz_game_systems : ""
+    tb_jmz_games ||--o{ tb_jmz_game_servers : ""
+    tb_jmz_systems ||--o{ tb_jmz_game_servers : ""
+    tb_jmz_orders }o--|| tb_jmz_games : ""
+    tb_jmz_orders }o--|| tb_jmz_systems : ""
+    tb_jmz_orders }o--|| tb_jmz_game_servers : ""
+    tb_jmz_orders }o--|| tb_jmz_user : ""
+    tb_jmz_orders }o--o| tb_jmz_user : ""
+    tb_jmz_orders }o--o| tb_jmz_user : ""
+    tb_jmz_transactions }o--|| tb_jmz_user : ""
+    tb_jmz_transactions }o--o| tb_jmz_orders : ""
+    tb_jmz_messages }o--o| tb_jmz_orders : ""
+    tb_jmz_messages }o--|| tb_jmz_user : ""
+    tb_jmz_messages }o--o| tb_jmz_user : ""
+    tb_jmz_role ||--o{ tb_jmz_role_permission : ""
+    tb_jmz_permission ||--o{ tb_jmz_role_permission : ""
+    tb_jmz_menu |o..o| tb_jmz_menu : ""
+    tb_jmz_role ||--o{ tb_jmz_role_menu : ""
+    tb_jmz_menu ||--o{ tb_jmz_role_menu : ""
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'base',
+            er: {
+                diagramPadding: 15,
+                nodePadding: 10,
+                rankSpacing: 40,
+                minEntityWidth: 80,
+                minEntityHeight: 30,
+                entityPadding: 8,
+                stroke: '#c41a1a',
+                fill: '#ffffff',
+                fontSize: 10,
+                useMaxWidth: true
+            },
+            themeVariables: {
+                primaryColor: '#ffffff',
+                primaryTextColor: '#333333',
+                primaryBorderColor: '#c41a1a',
+                lineColor: '#666666',
+                secondaryColor: '#f5f5f5',
+                tertiaryColor: '#fafafa',
+                noteBkgColor: '#fff5cc',
+                noteTextColor: '#333333',
+                noteBorderColor: '#c41a1a',
+                actorBkg: '#ffffff',
+                actorBorder: '#c41a1a',
+                actorTextColor: '#333333',
+                actorLineColor: '#666666',
+                signalColor: '#333333',
+                signalTextColor: '#333333',
+                labelBoxBkgColor: '#ffffff',
+                labelBoxBorderColor: '#c41a1a',
+                labelTextColor: '#333333',
+                loopTextColor: '#333333',
+                activationBorderColor: '#c41a1a',
+                activationBkgColor: '#fff0f0',
+                sequenceNumberColor: '#ffffff'
+            }
+        });
+    </script>
+</body>
+</html>

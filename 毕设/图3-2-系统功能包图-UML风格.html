@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>图 3-3 游戏代练平台系统功能包图</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --pkg-fill:      #fff9e6;
+      --pkg-fill-mid:  #fff3cc;
+      --pkg-border:    #5c4033;
+      --text:          #3d2914;
+      --dash:          #6b4423;
+      --outer-fill:    #fffef5;
+      --pkg-common-bg: #fff3cc;
+      --pkg-gw-bg:     #eff6ff;
+      --pkg-gw-border: #1d4ed8;
+      --pkg-srv-bg:    #fff;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Noto Serif SC", "SimSun", serif;
+      background: #e8e4d9;
+      color: var(--text);
+      padding: 40px 24px 60px;
+      min-width: 1000px;
+    }
+
+    /* ── 最外层系统包 ── */
+    .outer-package {
+      max-width: 980px;
+      margin: 0 auto;
+      border: 2.5px solid var(--pkg-border);
+      background: var(--outer-fill);
+      padding: 30px 24px 32px;
+      position: relative;
+      box-shadow: 0 2px 10px rgba(60,40,20,0.13);
+    }
+
+    .outer-tab {
+      position: absolute;
+      top: -2px; left: 20px;
+      transform: translateY(-100%);
+      background: var(--pkg-fill-mid);
+      border: 2.5px solid var(--pkg-border);
+      border-bottom: none;
+      padding: 6px 22px 8px;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: 0.12em;
+      white-space: nowrap;
+    }
+    .outer-tab::after {
+      content: "";
+      position: absolute;
+      right: -10px; bottom: 0;
+      width: 0; height: 0;
+      border-left: 10px solid var(--pkg-border);
+      border-bottom: 10px solid transparent;
+    }
+
+    /* ── 包网格：外层 flex 行，内层分层 grid ── */
+    .layer { margin-bottom: 18px; }
+
+    /* 第一层：网关 + 注册中心 */
+    .layer1 {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-bottom: 18px;
+    }
+
+    /* 第二层：服务网格 */
+    .layer2 {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 0;
+    }
+
+    .svc-col { display: flex; flex-direction: column; gap: 10px; }
+
+    /* ── UML 包通用 ── */
+    .uml-pkg {
+      position: relative;
+      border: 2px solid var(--pkg-border);
+      background: var(--pkg-fill);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 12px 14px 14px;
+    }
+
+    .uml-pkg::before {
+      content: attr(data-tab);
+      position: absolute;
+      top: -2px; left: -2px;
+      background: var(--pkg-fill-mid);
+      border: 2px solid var(--pkg-border);
+      border-bottom: none;
+      border-right: none;
+      padding: 3px 10px 4px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+      max-width: calc(100% - 4px);
+      line-height: 1.35;
+      word-break: break-all;
+    }
+
+    .pkg-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 5px;
+      margin-top: 10px;
+      line-height: 1.35;
+    }
+
+    .pkg-desc {
+      font-size: 10.5px;
+      line-height: 1.6;
+      color: #4a3728;
+    }
+
+    /* 网关包：蓝底 */
+    .pkg-gw {
+      border-color: var(--pkg-gw-border);
+      background: var(--pkg-gw-bg);
+    }
+    .pkg-gw::before {
+      background: #dbeafe;
+      border-color: var(--pkg-gw-border);
+    }
+    .pkg-gw .pkg-title { color: #1e3a5f; }
+
+    /* 公共模块包：金/黄底 */
+    .pkg-common {
+      border-color: #92400e;
+      background: #fffbeb;
+    }
+    .pkg-common::before {
+      background: #fef3c7;
+      border-color: #92400e;
+      color: #78350f;
+    }
+    .pkg-common .pkg-title { color: #78350f; }
+
+    /* 业务服务包：白底 */
+    .pkg-srv {
+      background: var(--pkg-srv-bg);
+      border-color: #92400e;
+    }
+    .pkg-srv::before {
+      background: var(--pkg-fill-mid);
+      border-color: #92400e;
+    }
+
+    /* ── 服务包尺寸 ── */
+    .pkg-gw { width: 170px; min-height: 88px; }
+    .pkg-common { width: 160px; min-height: 88px; }
+    .pkg-srv { width: 150px; min-height: 100px; }
+
+    /* ── 业务服务层大包（跨四列）── */
+    .pkg-layer-hub {
+      border: 2.5px solid #92400e;
+      background: linear-gradient(180deg, #fff3cc 0%, #ffe8a8 100%);
+      position: relative;
+      padding: 14px 16px 16px;
+      margin-top: 10px;
+      flex-shrink: 0;
+    }
+    .pkg-layer-hub::before {
+      content: attr(data-tab);
+      position: absolute;
+      top: -2px; left: -2px;
+      background: #fef3c7;
+      border: 2.5px solid #92400e;
+      border-bottom: none;
+      border-right: none;
+      padding: 4px 14px 5px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #78350f;
+    }
+    .pkg-layer-hub .hub-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #78350f;
+      margin-top: 12px;
+      margin-bottom: 4px;
+      letter-spacing: 0.06em;
+    }
+    .pkg-layer-hub .hub-desc {
+      font-size: 10.5px;
+      line-height: 1.65;
+      color: #4a3728;
+      text-align: left;
+    }
+
+    /* ── 业务服务包网格 ── */
+    .srv-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 12px;
+      width: 100%;
+    }
+    .srv-cell {
+      border: 1.5px solid #d97706;
+      border-radius: 4px;
+      background: #fffef5;
+      padding: 7px 9px;
+      text-align: left;
+    }
+    .srv-cell-name {
+      font-size: 12px;
+      font-weight: 700;
+      color: #92400e;
+      font-family: "Source Sans 3", "Segoe UI", sans-serif;
+      margin-bottom: 3px;
+    }
+    .srv-cell-desc {
+      font-size: 10px;
+      color: #78350f;
+      line-height: 1.5;
+    }
+
+    /* ── 箭头列 ── */
+    .arrow-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-around;
+      padding: 0 4px;
+      flex-shrink: 0;
+    }
+    .arrow-cell {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--dash);
+      line-height: 1;
+      border-bottom: 2px dashed var(--dash);
+      padding-bottom: 2px;
+      user-select: none;
+    }
+    .spacer { height: 108px; }
+
+    /* ── 第四层：基础设施与第三方 ── */
+    .infra-row {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 4px;
+    }
+
+    /* ── 图意说明 ── */
+    .note-below {
+      max-width: 980px;
+      margin: 22px auto 0;
+      font-size: 12px;
+      line-height: 1.9;
+      color: #4a3728;
+      padding: 14px 18px;
+      background: rgba(255,255,255,0.65);
+      border: 1px solid #c9b896;
+      border-radius: 4px;
+    }
+    .note-below strong { color: #5c4033; }
+
+    .caption {
+      text-align: center;
+      margin-top: 36px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: 0.06em;
+    }
+
+    @media print { body { background: #fff; } }
+  </style>
+</head>
+<body>
+
+<div class="outer-package">
+  <div class="outer-tab">游戏代练平台</div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- 第一层：接入层                                 -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="layer layer1">
+    <div class="uml-pkg pkg-gw" data-tab="接入层">
+      <div class="pkg-title">jmz-gateway</div>
+      <div class="pkg-desc">统一 API 入口<br />路由转发 / 跨域 / 安全链</div>
+    </div>
+
+    <div class="uml-pkg pkg-common" data-tab="注册/配置中心">
+      <div class="pkg-title">jmz-register</div>
+      <div class="pkg-desc">Nacos<br />服务注册发现 / 配置管理</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- 第二层：业务服务层大包（⟷ 网关）              -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="layer layer2">
+
+    <!-- 左侧：公共模块包 -->
+    <div class="uml-pkg pkg-common" data-tab="公共基础包" style="width:168px;min-height:100px;align-self:center;">
+      <div class="pkg-title">jmz-common</div>
+      <div class="pkg-desc" style="text-align:left;">
+        jmz-common-core（工具类）<br />
+        jmz-common-redis（缓存）<br />
+        jmz-common-mybatis（MP）<br />
+        jmz-common-feign（调用）<br />
+        jmz-common-security（JWT）<br />
+        jmz-common-config（配置）
+      </div>
+    </div>
+
+    <!-- 左箭头 -->
+    <div class="arrow-col" style="align-self:center;padding:0 6px;">
+      <span class="arrow-cell">⟷</span>
+    </div>
+
+    <!-- 业务服务层大包 -->
+    <div class="pkg-layer-hub" data-tab="业务服务层">
+      <div class="hub-title">业务服务层</div>
+      <div class="hub-desc">以 Spring Cloud 微服务为载体，各服务独立部署，服务间通过 OpenFeign 同步调用；对外经网关暴露 REST 接口；承载领域规则、事务边界与安全鉴权，是平台业务逻辑的中枢。</div>
+      <div class="srv-grid" style="margin-top:10px;">
+        <div class="srv-cell">
+          <div class="srv-cell-name">server-user</div>
+          <div class="srv-cell-desc">用户资料、RBAC、游戏/区服/段位等基础数据维护；对外提供登录、注册与菜单路由接口。</div>
+        </div>
+        <div class="srv-cell">
+          <div class="srv-cell-name">server-order</div>
+          <div class="srv-cell-desc">订单状态机、发布与接单、取消审核、异常单处理、客服介入与平台仲裁。</div>
+        </div>
+        <div class="srv-cell">
+          <div class="srv-cell-name">server-account</div>
+          <div class="srv-cell-desc">账户余额、冻结/解冻、充值提现、资金流水及与支付宝等支付渠道对接。</div>
+        </div>
+        <div class="srv-cell">
+          <div class="srv-cell-name">jmz-file</div>
+          <div class="srv-cell-desc">文件上传、格式校验、与阿里云 OSS 对接，业务库仅保存对象引用 URL。</div>
+        </div>
+        <div class="srv-cell">
+          <div class="srv-cell-name">server-ai</div>
+          <div class="srv-cell-desc">封装通义千问等大模型，提供智能定价建议、订单文案优化与代练人员接单推荐。</div>
+        </div>
+        <div class="srv-cell">
+          <div class="srv-cell-name">server-websocket</div>
+          <div class="srv-cell-desc">WebSocket 长连接管理、即时通讯消息收发与订单状态推送；结合 Redis 实现跨实例路由。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右箭头 -->
+    <div class="arrow-col" style="align-self:center;padding:0 6px;">
+      <span class="arrow-cell">⟷</span>
+    </div>
+
+    <!-- 右侧：安全模块包 -->
+    <div class="uml-pkg pkg-common" data-tab="安全策略包" style="width:168px;min-height:100px;align-self:center;">
+      <div class="pkg-title">jmz-security</div>
+      <div class="pkg-desc" style="text-align:left;">
+        JWT 令牌颁发与校验<br />
+        @PreAuthorize 注解<br />
+        密码加密 / 盐值存储<br />
+        接口级权限校验<br />
+        与网关安全链衔接
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- 第三层：基础设施与第三方                      -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="infra-row">
+
+    <div class="uml-pkg pkg-common" data-tab="基础设施" style="width:190px;">
+      <div class="pkg-title">基础设施层</div>
+      <div class="pkg-desc" style="text-align:left;font-size:11px;">
+        <strong>Nacos</strong> · 服务注册与动态配置<br />
+        <strong>Seata</strong> · 分布式事务协调<br />
+        <strong>MySQL</strong> · 业务主数据持久化<br />
+        <strong>Redis</strong> · 缓存与会话路由<br />
+        <strong>OSS</strong> · 对象存储（非结构化文件）
+      </div>
+    </div>
+
+    <div class="uml-pkg" data-tab="第三方集成" style="border-color:#1d4ed8;background:#eff6ff;width:200px;">
+      <div class="pkg-title" style="color:#1e3a5f;">第三方集成</div>
+      <div class="pkg-desc" style="text-align:left;font-size:11px;color:#1e3a5f;">
+        <strong>支付宝</strong> · 充值扫码 / 提现打款 / 异步回调<br />
+        <strong>微信支付</strong> · 支付渠道对接<br />
+        <strong>通义千问</strong> · 大语言模型 API（智能定价、文案、推荐）
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- 图意说明 -->
+<div class="note-below">
+  <strong>图意说明：</strong>本图为游戏代练平台<strong>系统功能包图</strong>，展示后端微服务模块划分及包间依赖关系。最外层「游戏代练平台」为顶层系统包；<strong>接入层</strong>（<em>jmz-gateway</em>）统一接收前端请求并路由分发；<strong>公共基础包</strong>（<em>jmz-common</em>）以六子包形式提供工具类、Redis、MyBatis-Plus、Feign、Security 与配置等横切能力，被所有业务服务依赖复用；<strong>业务服务层</strong>包含用户（<em>server-user</em>）、订单（<em>server-order</em>）、账户（<em>server-account</em>）、文件（<em>jmz-file</em>）、AI（<em>server-ai</em>）与 WebSocket（<em>server-websocket</em>）六个独立部署单元；<strong>安全策略包</strong>（<em>jmz-security</em>）统一提供 JWT 与接口级鉴权；基础设施层（<em>Nacos</em>、<em>Seata</em>、<em>MySQL</em>、<em>Redis</em>、<em>OSS</em>）与第三方集成（支付宝、微信支付、通义千问）处于系统边界，为平台运行所依赖的外部组件。各包与业务服务层之间以<strong>虚线双向箭头（⟷）</strong>表示双向协作与数据回写关系。
+</div>
+
+<p class="caption">图 3-3 游戏代练平台系统功能包图</p>
+
+</body>
+</html>

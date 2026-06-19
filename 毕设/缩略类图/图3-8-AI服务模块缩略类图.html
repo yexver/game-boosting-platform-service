@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>图 3-8 AI服务模块缩略类图</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --pkg-fill:      #fff9e6;
+      --pkg-fill-mid:  #fff3cc;
+      --pkg-border:    #5c4033;
+      --text:          #3d2914;
+      --outer-fill:    #fffef5;
+      --center-fill:   #fff3cc;
+      --center-border: #8b4513;
+      --center-text:   #5c2d0a;
+      --ctrl-bg:       #e3f0ff;
+      --ctrl-border:   #1565c0;
+      --ctrl-tab:      #bbd6ff;
+      --svc-bg:        #e6f5ea;
+      --svc-border:    #2e7d32;
+      --svc-tab:      #c8e6c9;
+      --mapper-bg:       #fce4ec;
+      --mapper-border:   #c2185b;
+      --mapper-tab:      #f8bbd0;
+      --entity-bg:     #fff9c4;
+      --entity-border: #f9a825;
+      --entity-tab:    #fff176;
+      --arrow-color:   #8b6914;
+      --mono-font:     "JetBrains Mono", "Consolas", monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Noto Serif SC", "SimSun", serif;
+      background: #e8e4d9;
+      color: var(--text);
+      padding: 40px 24px 60px;
+      min-width: 1450px;
+    }
+
+    .outer-package {
+      max-width: 1550px;
+      margin: 0 auto;
+      border: 2.5px solid var(--pkg-border);
+      background: var(--outer-fill);
+      padding: 30px 24px 32px;
+      position: relative;
+      box-shadow: 0 2px 10px rgba(60,40,20,0.13);
+    }
+
+    .outer-tab {
+      position: absolute;
+      top: -2px; left: 20px;
+      transform: translateY(-100%);
+      background: var(--pkg-fill-mid);
+      border: 2.5px solid var(--pkg-border);
+      border-bottom: none;
+      padding: 6px 22px 8px;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: 0.12em;
+      white-space: nowrap;
+    }
+    .outer-tab::after {
+      content: "";
+      position: absolute;
+      right: -10px; bottom: 0;
+      width: 0; height: 0;
+      border-left: 10px solid var(--pkg-border);
+      border-bottom: 10px solid transparent;
+    }
+
+    .main-flow {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      gap: 0;
+    }
+
+    .center-module {
+      position: relative;
+      border: 2.5px solid var(--center-border);
+      background: var(--center-fill);
+      padding: 14px 18px;
+      min-width: 130px;
+      max-width: 130px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      flex-shrink: 0;
+      box-shadow: 0 3px 10px rgba(92,45,10,0.18);
+    }
+
+    .center-module::before {
+      content: "AI服务";
+      position: absolute;
+      top: -2px; left: -2px;
+      background: #ffe082;
+      border: 2px solid var(--center-border);
+      border-bottom: none;
+      border-right: none;
+      padding: 4px 10px 5px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--center-text);
+      letter-spacing: 0.05em;
+    }
+
+    .center-module-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--center-text);
+      margin-top: 8px;
+      letter-spacing: 0.05em;
+    }
+
+    .arrow-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0 6px;
+      flex-shrink: 0;
+      height: 80px;
+    }
+
+    .arrow-line {
+      width: 32px;
+      height: 2px;
+      background: var(--arrow-color);
+      position: relative;
+    }
+    .arrow-line::after {
+      content: "";
+      position: absolute;
+      right: -6px; top: 50%;
+      transform: translateY(-50%);
+      width: 0; height: 0;
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+      border-left: 10px solid var(--arrow-color);
+    }
+
+    .layers-flow {
+      display: flex;
+      flex-direction: row;
+      gap: 0;
+      flex: 1;
+    }
+
+    .layer-box {
+      position: relative;
+      border: 2px solid var(--pkg-border);
+      background: var(--pkg-fill);
+      padding: 12px 10px 14px;
+      min-width: 290px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .layer-box::before {
+      content: attr(data-tab);
+      position: absolute;
+      top: -2px; left: -2px;
+      background: var(--pkg-fill-mid);
+      border: 2px solid var(--pkg-border);
+      border-bottom: none;
+      border-right: none;
+      padding: 3px 10px 4px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .layer-box.ctrl   { background: var(--ctrl-bg);   border-color: var(--ctrl-border); }
+    .layer-box.svc    { background: var(--svc-bg);    border-color: var(--svc-border); }
+    .layer-box.dto    { background: var(--mapper-bg); border-color: var(--mapper-border); }
+    .layer-box.entity { background: var(--entity-bg); border-color: var(--entity-border); }
+
+    .layer-box.ctrl::before   { background: var(--ctrl-tab);   border-color: var(--ctrl-border); }
+    .layer-box.svc::before    { background: var(--svc-tab);    border-color: var(--svc-border); }
+    .layer-box.dto::before    { background: var(--mapper-tab); border-color: var(--mapper-border); }
+    .layer-box.entity::before { background: var(--entity-tab); border-color: var(--entity-border); }
+
+    .class-cards {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .uml-class {
+      background: #fffdf5;
+      border: 1.5px solid #a0522d;
+      min-width: 145px;
+      max-width: 160px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 1px 4px rgba(100,60,20,0.10);
+    }
+
+    .uml-class.ctrl   { border-color: var(--ctrl-border);   background: #e3f0ff; }
+    .uml-class.svc    { border-color: var(--svc-border);    background: #e6f5ea; }
+    .uml-class.dto    { border-color: var(--mapper-border); background: #fce4ec; }
+    .uml-class.entity { border-color: var(--entity-border); background: #fff9c4; }
+
+    .uml-class-header {
+      background: #f5e6c8;
+      border-bottom: 1.5px solid #a0522d;
+      padding: 5px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text);
+      text-align: center;
+    }
+    .uml-class.ctrl   .uml-class-header { background: var(--ctrl-tab);   border-bottom-color: var(--ctrl-border);   color: #0d47a1; }
+    .uml-class.svc   .uml-class-header { background: var(--svc-tab);    border-bottom-color: var(--svc-border);    color: #1b5e20; }
+    .uml-class.dto   .uml-class-header { background: var(--mapper-tab); border-bottom-color: var(--mapper-border); color: #880e4f; }
+    .uml-class.entity .uml-class-header { background: var(--entity-tab); border-bottom-color: var(--entity-border); color: #f57f17; }
+
+    .uml-class-package {
+      padding: 3px 8px;
+      font-size: 9px;
+      color: #7a5a3a;
+      text-align: center;
+      border-bottom: 1px dashed #c9a96e;
+      background: rgba(255,255,255,0.5);
+    }
+
+    .uml-class-section {
+      padding: 4px 8px;
+      font-family: var(--mono-font);
+      font-size: 9.5px;
+      color: #3d2914;
+      border-bottom: 1px solid #e0d4c0;
+      line-height: 1.5;
+    }
+
+    .uml-class-section:last-child {
+      border-bottom: none;
+    }
+
+    .layer-arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 4px;
+      flex-shrink: 0;
+    }
+
+    .layer-arrow::before {
+      content: "";
+      display: block;
+      width: 0; height: 0;
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+      border-left: 10px solid var(--arrow-color);
+    }
+
+    .service-label {
+      display: flex;
+      justify-content: center;
+      margin-top: 22px;
+    }
+
+    .service-tag {
+      background: var(--pkg-fill-mid);
+      border: 2px solid var(--pkg-border);
+      padding: 6px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: 0.08em;
+    }
+  </style>
+</head>
+<body>
+  <div class="outer-package">
+    <div class="outer-tab">AI服务模块</div>
+
+    <div class="main-flow">
+      <div class="center-module">
+        <div class="center-module-title">AI服务</div>
+      </div>
+
+      <div class="arrow-col"><div class="arrow-line"></div></div>
+
+      <div class="layers-flow">
+        <!-- 第1层：Controller -->
+        <div class="layer-box ctrl" data-tab="Controller 层">
+          <div class="class-cards">
+            <div class="uml-class ctrl">
+              <div class="uml-class-header">RecommendController<br/><span style="font-size:10px;font-weight:400">推荐控制器</span></div>
+              <div class="uml-class-package">server-ai</div>
+              <div class="uml-class-section">
+                + postRecommend(): Result<br/>
+                + getPriceRecommend(): Result<br/>
+                + getOrderOptimize(): Result<br/>
+                + takeRecommend(): Result
+              </div>
+            </div>
+            <div class="uml-class ctrl">
+              <div class="uml-class-header">AIController<br/><span style="font-size:10px;font-weight:400">AI对话控制器</span></div>
+              <div class="uml-class-package">server-ai</div>
+              <div class="uml-class-section">
+                + chat(): Result
+              </div>
+            </div>
+            <div class="uml-class ctrl">
+              <div class="uml-class-header">ChatController<br/><span style="font-size:10px;font-weight:400">聊天控制器</span></div>
+              <div class="uml-class-package">server-ai</div>
+              <div class="uml-class-section">
+                + chat(): Result<br/>
+                + chatWithContext(): Result<br/>
+                + getModelInfo(): Result
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="layer-arrow"></div>
+
+        <!-- 第2层：Service -->
+        <div class="layer-box svc" data-tab="Service 层">
+          <div class="class-cards">
+            <div class="uml-class svc">
+              <div class="uml-class-header">RecommendService<br/><span style="font-size:10px;font-weight:400">推荐服务</span></div>
+              <div class="uml-class-package">server-ai</div>
+              <div class="uml-class-section">
+                + postRecommend(): Result<br/>
+                + getPriceRecommend(): Result<br/>
+                + getOrderOptimize(): Result<br/>
+                + takeRecommend(): Result
+              </div>
+            </div>
+            <div class="uml-class svc">
+              <div class="uml-class-header">AliCloudAIService<br/><span style="font-size:10px;font-weight:400">阿里云AI服务</span></div>
+              <div class="uml-class-package">server-ai</div>
+              <div class="uml-class-section">
+                + askQuestion(): Result<br/>
+                + chatWithContext(): Result<br/>
+                + chatStream(): Result
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="service-label">
+      <div class="service-tag">server-ai 微服务</div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>图 3-4 系统功能包图（按功能模块划分）</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --blue:        #2563eb;
+      --blue-mid:    #1d4ed8;
+      --blue-dark:   #1e3a5f;
+      --blue-light:  #dbeafe;
+      --green:       #16a34a;
+      --green-light: #dcfce7;
+      --orange:      #d97706;
+      --orange-light:#fef3c7;
+      --purple:      #7c3aed;
+      --purple-light:#ede9fe;
+      --red:         #dc2626;
+      --red-light:   #fee2e2;
+      --teal:        #0d9488;
+      --teal-light:  #ccfbf1;
+      --pink:        #be185d;
+      --pink-light:  #fce7f3;
+      --gray-dark:   #1e293b;
+      --gray-mid:    #475569;
+      --gray-light:  #f1f5f9;
+      --border:      #cbd5e1;
+      --paper:       #f8fafc;
+      --shadow:      rgba(30, 58, 95, 0.1);
+      --font-cn:     "Noto Serif SC", "SimSun", serif;
+      --font-en:     "Source Sans 3", "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--paper);
+      font-family: var(--font-cn);
+      color: var(--gray-dark);
+      min-width: 1200px;
+      padding: 36px 28px 64px;
+    }
+
+    /* ─── 页面标题 ─── */
+    .page-header {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    .page-header h1 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--blue-dark);
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+    .page-header .subtitle {
+      font-size: 11px;
+      color: var(--gray-mid);
+      font-family: var(--font-en);
+    }
+
+    /* ─── 功能包网格布局 ─── */
+    .func-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    /* ─── 功能包通用样式 ─── */
+    .func-pkg {
+      background: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px var(--shadow);
+      border: 1.5px solid var(--border);
+    }
+    .func-pkg-header {
+      padding: 12px 14px 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .func-pkg-icon {
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    .func-pkg-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.02em;
+    }
+    .func-pkg-code {
+      font-size: 10px;
+      color: rgba(255,255,255,0.8);
+      font-family: var(--font-en);
+      margin-left: auto;
+      background: rgba(255,255,255,0.2);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .func-pkg-body {
+      padding: 12px 14px 14px;
+    }
+
+    /* 功能包颜色主题 */
+    .func-pkg.auth   { --pkg-hdr: linear-gradient(135deg, #be185d, #ec4899); --pkg-icon-bg: #9d174d; }
+    .func-pkg.sysadmin { --pkg-hdr: linear-gradient(135deg, #1d4ed8, #2563eb); --pkg-icon-bg: #1e40af; }
+    .func-pkg.order  { --pkg-hdr: linear-gradient(135deg, #059669, #10b981); --pkg-icon-bg: #047857; }
+    .func-pkg.account{ --pkg-hdr: linear-gradient(135deg, #d97706, #f59e0b); --pkg-icon-bg: #b45309; }
+    .func-pkg.game   { --pkg-hdr: linear-gradient(135deg, #7c3aed, #8b5cf6); --pkg-icon-bg: #6d28d9; }
+    .func-pkg.ai     { --pkg-hdr: linear-gradient(135deg, #0891b2, #06b6d4); --pkg-icon-bg: #0e7490; }
+    .func-pkg.chat   { --pkg-hdr: linear-gradient(135deg, #dc2626, #ef4444); --pkg-icon-bg: #b91c1c; }
+    .func-pkg.file   { --pkg-hdr: linear-gradient(135deg, #475569, #64748b); --pkg-icon-bg: #334155; }
+
+    .func-pkg-header { background: var(--pkg-hdr); }
+    .func-pkg-icon   { background: var(--pkg-icon-bg); }
+
+    /* ─── 内部类列表 ─── */
+    .class-list {
+      list-style: none;
+    }
+    .class-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 6px 0;
+      border-bottom: 1px dashed #f1f5f9;
+    }
+    .class-item:last-child { border-bottom: none; }
+
+    .class-badge {
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-size: 9px;
+      font-weight: 700;
+      font-family: var(--font-en);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .badge-ctrl { background: var(--blue-light); color: var(--blue-mid); }
+    .badge-svc  { background: var(--green-light); color: var(--green); }
+    .badge-mapper { background: var(--purple-light); color: var(--purple); }
+    .badge-domain { background: var(--orange-light); color: var(--orange); }
+    .badge-util  { background: var(--gray-light); color: var(--gray-mid); }
+    .badge-filter { background: var(--red-light); color: var(--red); }
+    .badge-config { background: var(--teal-light); color: var(--teal); }
+
+    .class-text { flex: 1; }
+    .class-name {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--gray-dark);
+      font-family: var(--font-en);
+    }
+    .class-desc {
+      font-size: 9.5px;
+      color: var(--gray-mid);
+      line-height: 1.4;
+      margin-top: 1px;
+    }
+
+    /* ─── 包间依赖关系 ─── */
+    .dep-section {
+      max-width: 1200px;
+      margin: 32px auto 0;
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 24px 22px;
+      box-shadow: 0 2px 8px var(--shadow);
+    }
+    .dep-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--blue-dark);
+      letter-spacing: 0.06em;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .dep-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px 32px;
+    }
+    .dep-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--gray-mid);
+      line-height: 1.5;
+    }
+    .dep-arrow {
+      color: var(--blue-mid);
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .dep-badge {
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      font-family: var(--font-en);
+      white-space: nowrap;
+    }
+
+    /* ─── 架构说明 ─── */
+    .note-section {
+      max-width: 1200px;
+      margin: 32px auto 0;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 18px 22px 20px;
+      box-shadow: 0 1px 4px var(--shadow);
+    }
+    .note-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--blue-dark);
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .note-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 24px;
+    }
+    .note-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 11px;
+      line-height: 1.7;
+      color: var(--gray-mid);
+    }
+    .note-num {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: var(--blue-mid);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .note-item strong { color: var(--gray-dark); font-weight: 700; }
+    .note-item em {
+      color: var(--blue-mid);
+      font-style: normal;
+      font-family: var(--font-en);
+    }
+
+    .caption {
+      text-align: center;
+      margin-top: 32px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--gray-dark);
+    }
+
+    /* ─── 公共包样式 ─── */
+    .common-section {
+      max-width: 1200px;
+      margin: 24px auto 0;
+    }
+    .common-title {
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--gray-mid);
+      letter-spacing: 0.1em;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+    }
+    .common-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 16px;
+    }
+    .common-pkg {
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 6px var(--shadow);
+    }
+    .common-pkg-header {
+      padding: 8px 10px 7px;
+      background: linear-gradient(135deg, #475569, #64748b);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .common-pkg-icon {
+      width: 20px; height: 20px;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px;
+      color: #fff;
+    }
+    .common-pkg-name {
+      font-size: 10px;
+      font-weight: 700;
+      color: #fff;
+      font-family: var(--font-en);
+    }
+    .common-pkg-body {
+      padding: 8px 10px 10px;
+    }
+    .common-item {
+      font-size: 9.5px;
+      color: var(--gray-mid);
+      line-height: 1.5;
+      padding: 2px 0;
+    }
+    .common-item::before {
+      content: "· ";
+      color: var(--blue-mid);
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>游戏代练平台 — 系统功能包图（按功能模块划分）</h1>
+  <div class="subtitle">Game Boosting Platform · Functional Package Diagram · UML</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!--                  功能包网格                        -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="func-grid">
+
+  <!-- ── 1. 认证授权 ── -->
+  <div class="func-pkg auth">
+    <div class="func-pkg-header">
+      <div class="func-pkg-icon">🔐</div>
+      <span class="func-pkg-title">认证授权</span>
+      <span class="func-pkg-code">jmz-security</span>
+    </div>
+    <div class="func-pkg-body">
+      <ul class="class-list">
+        <li class="class-item">
+          <span class="class-badge badge-ctrl">C</span>
+          <div class="class-text">
+            <div class="class-name">LoginController</div>
+            <div class="class-desc">用户登录 / 注册 / Token 签发</div>
+          </div>
+        </li>
+        <li class="class-item">
+          <span class="class-badge badge-ctrl">C</span>
+          <div class="class-text">
+            <div class="class-name">CaptchaController</div>
+            <div class="class-desc">图形验证码生成与校验</div>
+          </div>
+        </li>
+        <li class="class-item">
+          <span class="class-badge badge-ctrl">C</span>
+          <div class="class-text">
+            <div class="class-name">PhoneCaptchaController</div>
+            <div class="class-desc">短信验证码发送与校验</div>
+          </div>
+        </li>
+        <li class="class-item">
+          <span class="class-badge badge-util">U</span>
+          <div class="class-text">
+            <div class="class-name">JwtTokenProvider</div>
+            <div class="class-desc">JWT Token 创建与解析</div>
+          </div>
+        </li>
+        <li class="class-item">
+          <span class="class-badge badge-svc">S</span>
+          <div class="class-text">
+            <div class="class-name">CustomUserDetailsService</div>
+            <div class="class-desc">Spring Security 用户认证</div>
+          </div>
+        </li>
+        <li class="class-item">
+          <span class="class-badge badge-config">Cfg</span>
+          <div class="class-text">
+            <div class="class-name">SecurityConfig</div>
+            <div class="class-desc">Spring Security 配置</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── 2. 系统管理 ── -->
+  <div class="func-pkg sysadmin">
+    <div class="func-pkg-header">
+      <div class="func-pkg-icon">⚙️</div>
+      <span class="func-pkg-title">系统管理</span>
+      <span class="func-pkg-code">server-user</span>
+    </div>
+    <div class="func-pkg-body">
+      <ul class="class-list">
+        <li class="class-item">
+          <span class="class-badge badge-ctrl">C</span>
+          <div class="class-text">
+            <div class="class-name">UserController</div>
+            <div class="class-desc">用户信息 CRUD / 资料修改</div>
+          </div>
+        </li>
+        <li class="class-item">
+          <span class="class-badge badge-ctrl">C</span>
+          <div class="class-text">
+            <div class="class-name">LoginUserController</div>
+            <div class="class-desc">当前登录用户信息获取</div>
+          </div>
+        </li>
+        <li class="class-item">
+          <span class="class-badge badge-ctrl">C</span>
+          <div class="class-text">
+            <div class="class-name">UserIdentityVerificationController</div>
+            <div class="class-desc">用户身份认证 / 实名验证</div>
+          </div>
+        </li>
+        <li class="class-item">
+          <span class="class-badge badge-ctrl">C</span>
+          <div class="class-text">
+            <div class="class-name">RoleController</div>
+            <div class="class-desc">角色创建 / 分配 / 权限绑定</div>
+          </div>
+        </li>
+        <li class="class-item">
+          <span class="class-badge badge-ctrl">C</span>
+          <div class="class-text">
+            <div class="class-name">MenuController</div>
+            <div class="class-desc">菜单路由 / 动态菜单生成</div>
+          </div>
+        </li>
+        <li class="class-item">
+          <span class="class-badge badge-ctrl">C</span>
+          <div class="class-text">
+            <div class="class-name">PermissionController</div>
+            <div class="class-desc">权限标识 / 接口权限校验</div>
+          </div>
+        </li>
+        <li class="class-item">
+          <span class="class-badge badge-ctrl">C</span>
+          <div class="class-text">
+            <div class="class-name">DashboardController</div>
+            <div class="class-desc">工作台统计数据接口</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── 3. 订单管理 ── -->
+  <div class="func-pkg order">
+    <div class="func-pkg-header">
+      <div class="func-pkg-icon">📋</div>
+      <span class="func-pkg-title">订单管理</span>
+      <span class="func-pkg-code">server-order</span>
+    </div>
+    <div class="func-pkg-body">
+      <ul class="class-list">
+        <li class="class-item">
+          <span class="class-badge badge-ctrl">C</span>
+          <div class="class-text">
+            <div class="class-name">OrdersController</div>
+            <div class="class-desc">订单发布 / 接单 / 状态流转</div>
+          </div>
+        </li>
+        <li class="class-item">
+          <span class="class-badge badge-svc">S</span>
+          <div class="class-text">
+            <div class="class-name">OrderStateMachine</div>
+            <div class="class-desc">订单状态机 / 状态流转规则</div>
+          </div>
+        </li>
+        <li class="class-item">
+          <span class="class-badge badge-ctrl">C</span>
+          <div class="class-text">
+            <div class="class-name">SystemsController</div>
+            <div class="class-desc">游戏系统 / 游戏分类管理</div>
+          </div>
+        </li>
+        <li class="class-item">
+          <span class="class-badge badge-ctrl">C</span>
+          <div class="class-text">
+            <div class="class-name">GamesController</div>
+            <div class="class-desc">游戏信息 / 段位维护</div>
+          </div>
+        </li>
+        <li class="class-item">
+          <span class="class-badge badge-ctrl">C</span>
+          <div class="class-text">
+            <div class="class-name">GameServersController</div>
+            <div class="class-desc">游戏区服 / 服务器管理</div>
+          </div>
+        </li>
+        <li class="class-item">
+          <span class="class-badge badge-ctrl">C</span>
+          <div class="class-text">
+            <div class="class-name">MessagesController</div>
+            <div class="class-desc">订单留言 / 沟通记录</div>
+          </div>
+        </li>
+        <li class="class-item">
+          <span class="class-badge badge-ctrl">C</span>
+          <div class="class-text">
+            <div class="class-name">DashboardController</div>
+            <div class="class-desc">订单统计 / 报表数据</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── 4. 账户管理 ── -->
+  <div class="func-pkg account">
+    <div class="func-pkg-header">
+      <div class="func-pkg-icon">💰</div>
+      <span class="func-pkg-title">账户管理</span>
+      <span class="func-pkg-code">server-account</span>
+    </div>
+    <div class="func-pkg-body">
+      <ul class="class-list">
+        <li class="class-item">
+          <span class="class-badge badge-ctrl">C</span>
+          <div class="class-text">
+            <div class="class-name">UserAccountController</div>
+            <div class="class-desc">账户余额 / 账户明细查询</div>
+          </div>
+        </li>
+        <li class="class-item">
+          <span class="class-badge badge-svc">S</span>
+          <div class="class-text">
+            <div class="class-name">FreezeService</div>
+            <div class="class-desc">资金冻结 / 解冻 / 解冻审核</div>
+          </div>
+        </li>
+        <li class="class-item">
+          <span class="class-badge badge-ctrl">C</span>
+          <div class="class-text">
+            <div class="class-name">AliPayController</div>
+            <div class="class-desc">充值扫码 / 提现申请 / 回调</div>
+          </div>
+        </li>
+        <li class="class-item">
+          <span class="class-badge badge-ctrl">C</span>
+          <div class="class-text">
+            <div class="class-name">TransactionController</div>
+            <div class="class-desc">交易流水 / 收支明细</div>
+          </div>
+        </li>
+        <li class="class-item">
+          <span class="class-badge badge-svc">S</span>
+          <div class="class-text">
+            <div class="class-name">TransferService</div>
+            <div class="class-desc">资金划转 / 代练费用结算</div>
+          </div>
+        </li>
+        <li class="class-item">
+          <span class="class-badge badge-svc">S</span>
+          <div class="class-text">
+            <div class="class-name">WithdrawService</div>
+            <div class="class-desc">提现审核 / 打款处理</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── 5. 游戏数据 ── -->
+  <div class="func-pkg game">
+    <div class="func-pkg-header">
+      <div class="func-pkg-icon">🎮</div>
+      <span class="func-pkg-title">游戏数据</span>
+      <span class="func-pkg-code">server-order</span>
+    </div>
+    <div class="func-pkg-body">
+      <ul class="class-list">
+        <li class="class-item">
+          <span class="class-badge badge-ctrl">C</span>
+          <div class="class-text">
+            <div class="class-name">SystemsController</div>
+            <div class="class-desc">游戏系统分类管理</div>
+          </div>
+        </li>
+        <li class="class-item">
+          <span class="class-badge badge-ctrl">C</span>
+          <div class="class-text">
+            <div class="class-name">GamesController</div>
+            <div class="class-desc">游戏信息 / 段位体系</div>
+          </div>
+        </li>
+        <li class="class-item">
+          <span class="class-badge badge-ctrl">C</span>
+          <div class="class-text">
+            <div class="class-name">GameServersController</div>
+            <div class="class-desc">区服 / 大区 / 服务器</div>
+          </div>
+        </li>
+        <li class="class-item">
+          <span class="class-badge badge-svc">S</span>
+          <div class="class-text">
+            <div class="class-name">GameDataService</div>
+            <div class="class-desc">游戏数据缓存与同步</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── 5. AI服务 ── -->
+  <div class="func-pkg ai">
+    <div class="func-pkg-header">
+      <div class="func-pkg-icon">🤖</div>
+      <span class="func-pkg-title">AI服务</span>
+      <span class="func-pkg-code">server-ai</span>
+    </div>
+    <div class="func-pkg-body">
+      <ul class="class-list">
+        <li class="class-item">
+          <span class="class-badge badge-ctrl">C</span>
+          <div class="class-text">
+            <div class="class-name">AIController</div>
+            <div class="class-desc">AI 统一服务入口</div>
+          </div>
+        </li>
+        <li class="class-item">
+          <span class="class-badge badge-ctrl">C</span>
+          <div class="class-text">
+            <div class="class-name">RecommendController</div>
+            <div class="class-desc">智能接单推荐</div>
+          </div>
+        </li>
+        <li class="class-item">
+          <span class="class-badge badge-svc">S</span>
+          <div class="class-text">
+            <div class="class-name">PriceSuggestService</div>
+            <div class="class-desc">智能代练定价建议</div>
+          </div>
+        </li>
+        <li class="class-item">
+          <span class="class-badge badge-svc">S</span>
+          <div class="class-text">
+            <div class="class-name">CopyWriteService</div>
+            <div class="class-desc">订单文案 AI 优化</div>
+          </div>
+        </li>
+        <li class="class-item">
+          <span class="class-badge badge-svc">S</span>
+          <div class="class-text">
+            <div class="class-name">RecommendService</div>
+            <div class="class-desc">接单推荐算法</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── 6. 即时通讯 ── -->
+  <div class="func-pkg chat">
+    <div class="func-pkg-header">
+      <div class="func-pkg-icon">💬</div>
+      <span class="func-pkg-title">即时通讯</span>
+      <span class="func-pkg-code">server-websocket</span>
+    </div>
+    <div class="func-pkg-body">
+      <ul class="class-list">
+        <li class="class-item">
+          <span class="class-badge badge-ctrl">C</span>
+          <div class="class-text">
+            <div class="class-name">WebSocketController</div>
+            <div class="class-desc">WebSocket 连接管理</div>
+          </div>
+        </li>
+        <li class="class-item">
+          <span class="class-badge badge-svc">S</span>
+          <div class="class-text">
+            <div class="class-name">ChatService</div>
+            <div class="class-desc">消息收发 / 历史存储</div>
+          </div>
+        </li>
+        <li class="class-item">
+          <span class="class-badge badge-svc">S</span>
+          <div class="class-text">
+            <div class="class-name">PushService</div>
+            <div class="class-desc">订单状态变更推送</div>
+          </div>
+        </li>
+        <li class="class-item">
+          <span class="class-badge badge-util">U</span>
+          <div class="class-text">
+            <div class="class-name">SessionManager</div>
+            <div class="class-desc">会话管理 / 心跳检测</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── 7. 文件管理 ── -->
+  <div class="func-pkg file">
+    <div class="func-pkg-header">
+      <div class="func-pkg-icon">📁</div>
+      <span class="func-pkg-title">文件管理</span>
+      <span class="func-pkg-code">jmz-file</span>
+    </div>
+    <div class="func-pkg-body">
+      <ul class="class-list">
+        <li class="class-item">
+          <span class="class-badge badge-ctrl">C</span>
+          <div class="class-text">
+            <div class="class-name">FileController</div>
+            <div class="class-desc">文件上传 / 下载接口</div>
+          </div>
+        </li>
+        <li class="class-item">
+          <span class="class-badge badge-util">U</span>
+          <div class="class-text">
+            <div class="class-name">OssTemplate</div>
+            <div class="class-desc">OSS 对象存储操作封装</div>
+          </div>
+        </li>
+        <li class="class-item">
+          <span class="class-badge badge-util">U</span>
+          <div class="class-text">
+            <div class="class-name">UploadValidator</div>
+            <div class="class-desc">文件格式 / 大小校验</div>
+          </div>
+        </li>
+        <li class="class-item">
+          <span class="class-badge badge-svc">S</span>
+          <div class="class-text">
+            <div class="class-name">FileManageService</div>
+            <div class="class-desc">文件元数据管理</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!--                    公共模块                        -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="common-section">
+  <div class="common-title">— 公共模块 —</div>
+  <div class="common-grid">
+
+    <div class="common-pkg">
+      <div class="common-pkg-header">
+        <div class="common-pkg-icon">⚙</div>
+        <span class="common-pkg-name">jmz-common-core</span>
+      </div>
+      <div class="common-pkg-body">
+        <div class="common-item">Result 统一响应</div>
+        <div class="common-item">PageResult 分页结果</div>
+        <div class="common-item">BaseEntity 实体基类</div>
+        <div class="common-item">Exception 异常定义</div>
+      </div>
+    </div>
+
+    <div class="common-pkg">
+      <div class="common-pkg-header">
+        <div class="common-pkg-icon">🔑</div>
+        <span class="common-pkg-name">jmz-common-security</span>
+      </div>
+      <div class="common-pkg-body">
+        <div class="common-item">TokenService Token管理</div>
+        <div class="common-item">LoginUser 登录用户</div>
+        <div class="common-item">JwtUtil JWT工具</div>
+        <div class="common-item">SecurityUtils 安全工具</div>
+      </div>
+    </div>
+
+    <div class="common-pkg">
+      <div class="common-pkg-header">
+        <div class="common-pkg-icon">💾</div>
+        <span class="common-pkg-name">jmz-common-redis</span>
+      </div>
+      <div class="common-pkg-body">
+        <div class="common-item">RedisTemplate 封装</div>
+        <div class="common-item">CacheManager 缓存管理</div>
+        <div class="common-item">Session 会话存储</div>
+      </div>
+    </div>
+
+    <div class="common-pkg">
+      <div class="common-pkg-header">
+        <div class="common-pkg-icon">🗄</div>
+        <span class="common-pkg-name">jmz-common-mybatis</span>
+      </div>
+      <div class="common-pkg-body">
+        <div class="common-item">BaseMapper CRUD增强</div>
+        <div class="common-item">PageHelper 分页插件</div>
+        <div class="common-item">AutoFill 自动填充</div>
+      </div>
+    </div>
+
+    <div class="common-pkg">
+      <div class="common-pkg-header">
+        <div class="common-pkg-icon">📡</div>
+        <span class="common-pkg-name">jmz-common-feign</span>
+      </div>
+      <div class="common-pkg-body">
+        <div class="common-item">FeignClient 客户端</div>
+        <div class="common-item">FallbackFactory 降级</div>
+        <div class="common-item">Decoder/Encoder</div>
+      </div>
+    </div>
+
+    <div class="common-pkg">
+      <div class="common-pkg-header">
+        <div class="common-pkg-icon">⚡</div>
+        <span class="common-pkg-name">jmz-gateway</span>
+      </div>
+      <div class="common-pkg-body">
+        <div class="common-item">RoutesConfig 路由配置</div>
+        <div class="common-item">SecurityFilter 安全过滤</div>
+        <div class="common-item">CorsConfig 跨域配置</div>
+        <div class="common-item">Nacos 注册发现</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!--                  包间依赖关系                      -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="dep-section">
+  <div class="dep-title">功能包间依赖关系</div>
+  <div class="dep-grid">
+
+    <div class="dep-item">
+      <span class="dep-badge" style="background:#fce7f3;color:#be185d;">认证授权</span>
+      <span class="dep-arrow">→</span>
+      <span class="dep-badge" style="background:#e2e8f0;color:#475569;">公共模块</span>
+      <span>依赖 JWT 工具与 TokenService</span>
+    </div>
+
+    <div class="dep-item">
+      <span class="dep-badge" style="background:#1d4ed8;color:#fff;">系统管理</span>
+      <span class="dep-arrow">→</span>
+      <span class="dep-badge" style="background:#e2e8f0;color:#475569;">公共模块</span>
+      <span>依赖 RBAC 组件与菜单路由</span>
+    </div>
+
+    <div class="dep-item">
+      <span class="dep-badge" style="background:#dcfce7;color:#16a34a;">订单管理</span>
+      <span class="dep-arrow">→</span>
+      <span class="dep-badge" style="background:#fef3c7;color:#b45309;">账户管理</span>
+      <span>（Feign）冻结/结算资金</span>
+    </div>
+
+    <div class="dep-item">
+      <span class="dep-badge" style="background:#dcfce7;color:#16a34a;">订单管理</span>
+      <span class="dep-arrow">→</span>
+      <span class="dep-badge" style="background:#e2e8f0;color:#475569;">公共模块</span>
+      <span>依赖 Mapper 与 Redis 缓存</span>
+    </div>
+
+    <div class="dep-item">
+      <span class="dep-badge" style="background:#fef3c7;color:#b45309;">账户管理</span>
+      <span class="dep-arrow">→</span>
+      <span class="dep-badge" style="background:#e2e8f0;color:#475569;">公共模块</span>
+      <span>依赖资金安全与数据库操作</span>
+    </div>
+
+    <div class="dep-item">
+      <span class="dep-badge" style="background:#fef3c7;color:#b45309;">账户管理</span>
+      <span class="dep-arrow">→</span>
+      <span class="dep-badge" style="background:#cbd5e1;color:#475569;">文件管理</span>
+      <span>充值凭证上传存储</span>
+    </div>
+
+    <div class="dep-item">
+      <span class="dep-badge" style="background:#cbd5e1;color:#475569;">文件管理</span>
+      <span class="dep-arrow">→</span>
+      <span class="dep-badge" style="background:#e2e8f0;color:#475569;">公共模块</span>
+      <span>依赖配置与工具类</span>
+    </div>
+
+    <div class="dep-item">
+      <span class="dep-badge" style="background:#ede9fe;color:#7c3aed;">AI服务</span>
+      <span class="dep-arrow">→</span>
+      <span class="dep-badge" style="background:#e2e8f0;color:#475569;">公共模块</span>
+      <span>通用工具与配置加载</span>
+    </div>
+
+    <div class="dep-item">
+      <span class="dep-badge" style="background:#fee2e2;color:#dc2626;">即时通讯</span>
+      <span class="dep-arrow">→</span>
+      <span class="dep-badge" style="background:#e2e8f0;color:#475569;">公共模块</span>
+      <span>Redis PubSub 消息路由</span>
+    </div>
+
+    <div class="dep-item">
+      <span class="dep-badge" style="background:#e2e8f0;color:#475569;">网关</span>
+      <span class="dep-arrow">→</span>
+      <span class="dep-badge" style="background:#f0fdf4;color:#16a34a;">Nacos</span>
+      <span>服务注册与动态路由</span>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!--                     架构说明                       -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="note-section">
+  <div class="note-title">架构说明</div>
+  <div class="note-grid">
+
+    <div class="note-item">
+      <div class="note-num">1</div>
+      <span><strong>按功能模块划分：</strong>本图以业务功能为导向，将系统划分为<em>认证授权、系统管理、订单管理、账户管理、游戏数据、AI服务、即时通讯、文件管理</em>八大功能包，每个包对应一个或多个微服务。</span>
+    </div>
+
+    <div class="note-item">
+      <div class="note-num">2</div>
+      <span><strong>认证授权独立：</strong><em>jmz-security</em> 作为统一认证中心，负责登录注册、验证码、Token 签发等安全功能，与业务解耦，支持多端复用。</span>
+    </div>
+
+    <div class="note-item">
+      <div class="note-num">3</div>
+      <span><strong>系统管理统一：</strong><em>系统管理</em>模块包含用户信息、身份认证、角色权限、菜单路由、工作台统计等功能，为平台运营提供完整的 RBAC 后台管理能力。</span>
+    </div>
+
+    <div class="note-item">
+      <div class="note-num">4</div>
+      <span><strong>订单与资金分离：</strong><em>订单管理</em>负责代练订单的全生命周期，<em>账户管理</em>负责资金冻结、结算、提现，两者通过 Feign 解耦，保证资金安全。</span>
+    </div>
+
+    <div class="note-item">
+      <div class="note-num">5</div>
+      <span><strong>游戏数据复用：</strong>游戏、区服、段位等基础数据由<em>订单管理</em>模块维护，同时服务于用户下单和代练接单的完整流程。</span>
+    </div>
+
+    <div class="note-item">
+      <div class="note-num">6</div>
+      <span><strong>AI 能力注入：</strong><em>AI服务</em>为订单模块提供智能定价、文案优化和接单推荐能力，提升用户体验和平台撮合效率。</span>
+    </div>
+
+    <div class="note-item">
+      <div class="note-num">7</div>
+      <span><strong>实时通讯：</strong><em>即时通讯</em>基于 WebSocket + Redis PubSub 实现，支持订单状态推送和买卖家实时聊天，减少轮询开销。</span>
+    </div>
+
+    <div class="note-item">
+      <div class="note-num">8</div>
+      <span><strong>公共模块下沉：</strong>所有功能包共享<em>jmz-common</em>中的核心对象、安全组件、Redis 模板、MyBatis-Plus 增强和 Feign 客户端，避免代码重复。</span>
+    </div>
+
+  </div>
+</div>
+
+<p class="caption">图 3-4 系统功能包图（按功能模块划分）</p>
+
+</body>
+</html>
